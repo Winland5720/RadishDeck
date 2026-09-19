@@ -1,6 +1,6 @@
 # Radish Deck
 
-![Radish Deck](docs/assets/radishdeck_logo.png)
+![Radish Deck](assets/branding/radishdeck_logo_horizontal.png)
 
 ## Персональный центр управления компьютером
 
