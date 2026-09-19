@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Windows;
+using RadishDeck.Core;
 using RadishDeck.Desktop.Services;
 
 namespace RadishDeck.Desktop;
@@ -12,6 +13,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ServerVersionText.Text = AppVersion.Current;
         Closed += (_, _) =>
         {
             _serverStatusService?.Dispose();

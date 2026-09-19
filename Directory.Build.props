@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <_AppVersionSource>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)src/RadishDeck.Core/AppVersion.cs'))</_AppVersionSource>
+    <Version>$([System.Text.RegularExpressions.Regex]::Match('$(_AppVersionSource)', 'Current\s*=\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</Version>
+  </PropertyGroup>
+</Project>

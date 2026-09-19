@@ -136,6 +136,8 @@ GET /status
 -   Added Core Element model.
 -   Added Core Action model.
 -   Added Core State model.
+-   Centralized application version source.
+-   Unified version format with development stage suffix.
 
 Создан базовый фундамент моделей ядра Radish Deck.
 
@@ -152,7 +154,7 @@ Creation of the Radish Deck Core model foundation.
 
 Формат версии:
 
-MAJOR.MINOR.PATCH
+MAJOR.MINOR.PATCH-stage (alpha, beta или release)
 
 Alpha версии используются для ранней разработки и проверки архитектуры.
 

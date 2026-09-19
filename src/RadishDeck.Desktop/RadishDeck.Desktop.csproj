@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>RadishDeck</AssemblyName>
-    <Version>0.1.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RadishDeck.Core\RadishDeck.Core.csproj" />
