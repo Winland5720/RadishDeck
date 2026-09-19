@@ -2,5 +2,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Radish Deck" Height="450" Width="800">
-    <Grid />
+    <StackPanel Margin="24">
+        <TextBlock Text="Radish Deck" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="Server status:" Margin="0,24,0,4" />
+        <TextBlock x:Name="ServerStatusText" Text="Connecting..." FontSize="18" />
+        <TextBlock Text="Version:" Margin="0,16,0,4" />
+        <TextBlock x:Name="ServerVersionText" Text="—" FontSize="18" />
+    </StackPanel>
 </Window>
