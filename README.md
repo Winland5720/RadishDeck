@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Radish Deck
 
 ![Radish Deck](docs/assets/radishdeck_logo.png)
@@ -220,6 +219,10 @@ Radish Deck разрабатывается по следующим правил�
 Проект находится в стадии разработки.
 
 Информация о лицензии будет добавлена позже.
+=======
+# RadishDeck
+Radish Deck - Stream Deck style system administration control center
+>>>>>>> a3dbdace756831ec8346370b8791039661fdd59c
 =======
 # RadishDeck
 Radish Deck - Stream Deck style system administration control center
