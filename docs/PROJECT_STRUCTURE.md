@@ -118,6 +118,10 @@ Core содержит чистые модели домена в `src/RadishDeck.
 - `Action.cs` — идентификатор, имя и тип действия;
 - `State.cs` — статус и сообщение состояния.
 
+Контракт выполнения действий находится в `src/RadishDeck.Core/Execution/`.
+Desktop содержит конкретный `ServerStartActionExecutor`, связывающий action
+`server.start` с `ServerLauncherService`.
+
 ------------------------------------------------------------------------
 
 # 6. Core

@@ -150,6 +150,16 @@ Creation of the Radish Deck Core model foundation.
 
 ------------------------------------------------------------------------
 
+# 0.1.4-alpha
+
+## Added / Добавлено
+
+-   First Element execution pipeline.
+-   Action execution mechanism.
+-   Desktop dashboard prototype.
+
+------------------------------------------------------------------------
+
 # Versioning
 
 Формат версии:

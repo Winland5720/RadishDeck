@@ -544,3 +544,10 @@ Desktop и Server используют `RadishDeck.Core.AppVersion.Current`. В�
 
 `Directory.Build.props` получает из этого же файла значение `Version` для
 всех проектов, чтобы метаданные сборок не требовали ручного дублирования.
+
+В Alpha 0.1.4 первый исполняемый поток строится так:
+
+    Element → Action → IActionExecutor → ServerLauncherService → State
+
+Desktop не вызывает сервис запуска напрямую из обработчика кнопки. Он
+передаёт модели Element и Action исполнителю, который возвращает State.

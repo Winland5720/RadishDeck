@@ -70,6 +70,9 @@ Alpha 0.1.0
 
 # 3. Alpha 0.1.0 Development
 
+Alpha 0.1.4 добавляет первый проверяемый поток выполнения:
+`Element → Action → Executor → Service → State`.
+
 ## Step 1 --- .NET Solution
 
 Создать:
