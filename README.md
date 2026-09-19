@@ -197,7 +197,7 @@ dotnet build
 Release сборка:
 
 ``` bash
-dotnet publish -c Release
+dotnet publish src/RadishDeck.Desktop -c Release
 ```
 
 ------------------------------------------------------------------------
