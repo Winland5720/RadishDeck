@@ -214,16 +214,9 @@ Radish Deck разрабатывается по следующим правил�
 
 ------------------------------------------------------------------------
 
-# Лицензия
+# License
 
-Проект находится в стадии разработки.
+The project is currently under development.
 
-Информация о лицензии будет добавлена позже.
+License information will be added later.
 =======
-# RadishDeck
-Radish Deck - Stream Deck style system administration control center
->>>>>>> a3dbdace756831ec8346370b8791039661fdd59c
-=======
-# RadishDeck
-Radish Deck - Stream Deck style system administration control center
->>>>>>> a3dbdace756831ec8346370b8791039661fdd59c
