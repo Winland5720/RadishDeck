@@ -1,0 +1,113 @@
+# ==================================
+# Radish Deck
+# .NET / C# project
+# ==================================
+
+
+# ------------------
+# Build output
+# ------------------
+
+bin/
+obj/
+publish/
+
+
+# ------------------
+# Visual Studio
+# ------------------
+
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+
+# ------------------
+# Rider / JetBrains
+# ------------------
+
+.idea/
+*.sln.iml
+
+
+# ------------------
+# VS Code
+# ------------------
+
+.vscode/
+
+
+# ------------------
+# Logs
+# ------------------
+
+*.log
+
+
+# ------------------
+# Temporary files
+# ------------------
+
+*.tmp
+*.temp
+*.bak
+
+
+# ------------------
+# Database
+# ------------------
+
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ------------------
+# Configuration secrets
+# ------------------
+
+appsettings.Development.json
+appsettings.Local.json
+
+
+# ------------------
+# Environment files
+# ------------------
+
+.env
+.env.*
+
+
+# ------------------
+# OS files
+# ------------------
+
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+
+# ------------------
+# Test results
+# ------------------
+
+TestResults/
+*.trx
+
+
+# ------------------
+# Publish packages
+# ------------------
+
+*.zip
+*.tar
+*.gz
+
+
+# ------------------
+# User assets temporary
+# ------------------
+
+*.cache
