@@ -131,17 +131,20 @@ GET /status
 
 # Alpha 0.1.3
 
-## Planned / Планируется
+## Added / Добавлено
 
-Core foundation:
+-   Added Core Element model.
+-   Added Core Action model.
+-   Added Core State model.
 
--   Element model.
--   Action model.
--   State model.
+Создан базовый фундамент моделей ядра Radish Deck.
 
-Создание базовых моделей ядра Radish Deck.
+Creation of the Radish Deck Core model foundation.
 
-Creation of Radish Deck core models.
+## Verification / Проверка
+
+-   `dotnet build RadishDeck.sln` успешно.
+-   Core не содержит ссылок на Desktop, Server, Infrastructure или сторонние библиотеки.
 
 ------------------------------------------------------------------------
 
