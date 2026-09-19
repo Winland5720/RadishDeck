@@ -6,38 +6,61 @@ namespace RadishDeck.Desktop;
 
 public partial class MainWindow : Window
 {
-    private readonly ServerStatusService _serverStatusService =
-        new(new Uri("http://127.0.0.1:5187/"));
+    private readonly ServerLauncherService _serverLauncherService = new();
+    private ServerStatusService? _serverStatusService;
 
     public MainWindow()
     {
         InitializeComponent();
-        Loaded += OnLoaded;
-        Closed += (_, _) => _serverStatusService.Dispose();
+        Closed += (_, _) =>
+        {
+            _serverStatusService?.Dispose();
+            _serverLauncherService.Dispose();
+        };
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void StartServerButton_OnClick(object sender, RoutedEventArgs e)
     {
+        if (!int.TryParse(PortTextBox.Text, out var port) || port is < 1 or > 65535 || string.IsNullOrWhiteSpace(IpAddressTextBox.Text))
+        {
+            ServerStatusText.Text = "Unavailable";
+            return;
+        }
+
+        StartServerButton.IsEnabled = false;
         try
         {
-            var serverStatus = await _serverStatusService.GetStatusAsync();
-            ServerStatusText.Text = serverStatus?.Status switch
+            var ipAddress = IpAddressTextBox.Text.Trim();
+            var started = await _serverLauncherService.StartAsync(ipAddress, port);
+            if (!started)
             {
-                "running" => "Running",
-                null => "Unavailable",
-                var status => status
-            };
+                ServerStatusText.Text = "Unavailable";
+                return;
+            }
+
+            _serverStatusService?.Dispose();
+            _serverStatusService = new ServerStatusService(new Uri($"http://{ipAddress}:{port}/"));
+            var serverStatus = await _serverStatusService.GetStatusAsync();
+            ServerStatusText.Text = serverStatus?.Status == "running" ? "Running" : "Unavailable";
             ServerVersionText.Text = serverStatus?.Version ?? "Unavailable";
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
             ServerStatusText.Text = "Unavailable";
             ServerVersionText.Text = "Unavailable";
         }
-        catch (TaskCanceledException)
+        finally
         {
-            ServerStatusText.Text = "Unavailable";
-            ServerVersionText.Text = "Unavailable";
+            StartServerButton.IsEnabled = true;
         }
+    }
+
+    private void StopServerButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        _serverLauncherService.Stop();
+        _serverStatusService?.Dispose();
+        _serverStatusService = null;
+        ServerStatusText.Text = "Stopped";
+        ServerVersionText.Text = "—";
     }
 }

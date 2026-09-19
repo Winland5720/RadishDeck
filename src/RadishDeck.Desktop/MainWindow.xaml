@@ -4,8 +4,17 @@
         Title="Radish Deck" Height="450" Width="800">
     <StackPanel Margin="24">
         <TextBlock Text="Radish Deck" FontSize="24" FontWeight="Bold" />
-        <TextBlock Text="Server status:" Margin="0,24,0,4" />
-        <TextBlock x:Name="ServerStatusText" Text="Connecting..." FontSize="18" />
+        <TextBlock Text="Server Configuration" Margin="0,24,0,12" FontSize="18" />
+        <TextBlock Text="IP Address:" />
+        <TextBox x:Name="IpAddressTextBox" Text="127.0.0.1" Margin="0,4,0,8" />
+        <TextBlock Text="Port:" />
+        <TextBox x:Name="PortTextBox" Text="5187" Margin="0,4,0,12" />
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="StartServerButton" Content="Start Server" Click="StartServerButton_OnClick" Padding="12,6" />
+            <Button x:Name="StopServerButton" Content="Stop Server" Click="StopServerButton_OnClick" Padding="12,6" Margin="8,0,0,0" />
+        </StackPanel>
+        <TextBlock Text="Server:" Margin="0,24,0,4" />
+        <TextBlock x:Name="ServerStatusText" Text="Stopped" FontSize="18" />
         <TextBlock Text="Version:" Margin="0,16,0,4" />
         <TextBlock x:Name="ServerVersionText" Text="—" FontSize="18" />
     </StackPanel>
