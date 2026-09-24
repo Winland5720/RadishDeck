@@ -2,7 +2,7 @@ using RadishDeck.Core;
 using RadishDeck.Core.Actions;
 using RadishDeck.Core.Models;
 using RadishDeck.Infrastructure;
-using RadishDeck.Infrastructure.Actions.Executors;
+using RadishDeck.Infrastructure.Actions;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -12,9 +12,8 @@ app.UseStaticFiles();
 
 var deckStore = new DeckJsonStore();
 
-var registry = new ActionRegistry();
-registry.Register(new("process.start", "Start Process", "Local"), new ProcessStartActionExecutor());
-registry.Register(new("url.open", "Open URL", "Local"), new UrlOpenActionExecutor());
+var registry = ActionCatalog.Create();
+
 var dispatcher = new ActionDispatcher(registry);
 
 app.MapGet("/status", () => new ServerStatus(
