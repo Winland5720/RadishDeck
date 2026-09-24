@@ -1,9 +1,5 @@
 # Radish Deck
 
-<h1 align="center">
-  Radish Deck
-</h1>
-
 <p align="center">
   <img src="assets/branding/radishdeck_logo_horizontal.png" alt="Radish Deck Logo">
 </p>
