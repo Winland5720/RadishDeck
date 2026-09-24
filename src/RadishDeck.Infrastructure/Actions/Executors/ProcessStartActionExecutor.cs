@@ -4,7 +4,7 @@ using RadishDeck.Core.Execution;
 using RadishDeck.Core.Models;
 using CoreAction = RadishDeck.Core.Models.Action;
 
-namespace RadishDeck.Desktop.Services;
+namespace RadishDeck.Infrastructure.Actions.Executors;
 
 public sealed class ProcessStartActionExecutor : IActionExecutor
 {

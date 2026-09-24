@@ -3,13 +3,13 @@ using RadishDeck.Core.Execution;
 using RadishDeck.Core.Models;
 using CoreAction = RadishDeck.Core.Models.Action;
 
-namespace RadishDeck.Desktop.Services;
+namespace RadishDeck.Infrastructure.Actions.Executors;
 
 public sealed class UrlOpenActionExecutor : IActionExecutor
 {
-    private readonly System.Action<Uri> _open;
+    private readonly Action<Uri> _open;
 
-    public UrlOpenActionExecutor(System.Action<Uri>? open = null) =>
+    public UrlOpenActionExecutor(Action<Uri>? open = null) =>
         _open = open ?? (uri => Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }));
 
     public Task<State> ExecuteAsync(Element element, CoreAction action, CancellationToken cancellationToken = default)
