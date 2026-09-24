@@ -33,7 +33,6 @@
 
 **Текущая версия:** `0.2.2-alpha`
 
-**Следующая версия:** `0.2.1-alpha (planned)`
 
 Проект находится в активной разработке.
 
@@ -230,7 +229,7 @@ Users build their own Deck for their own needs:
 
 **Current version:** `0.2.2-alpha`
 
-**Next version:** `0.2.1-alpha (planned)`
+
 
 The project is under active development.
 
