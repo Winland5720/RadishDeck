@@ -3,7 +3,7 @@
 # TECHNOLOGY STACK
 
 Версия:
-Alpha 0.1.0
+Alpha 0.2.0
 
 ---
 
@@ -57,4 +57,6 @@ API / WebSocket
 ↓
 
 Radish Deck Client
+
+
 

@@ -4,7 +4,7 @@
 
 Версия:
 
-Alpha 0.1.0
+Alpha 0.2.0
 
 ------------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ C# / .NET / WPF
 
 Назначение:
 
-Встроенный сервер.
+Отдельный ASP.NET Core процесс, поставляемый рядом с Desktop.
 
 Отвечает за:
 
@@ -269,9 +269,9 @@ Core является основой системы.
 
 ------------------------------------------------------------------------
 
-# 13. Alpha 0.1.0
+# 13. Alpha 0.2.0
 
-В Alpha 0.1.0 создаются:
+В Alpha 0.2.0 создаются:
 
 -   Solution;
 -   Core;
@@ -304,3 +304,13 @@ Core является основой системы.
 -   простой;
 -   понятной;
 -   расширяемой.
+
+
+
+## Alpha 0.2.0 additions
+
+- `src/RadishDeck.Core/Models/Deck.cs`, `Page.cs`, `DeckEditor.cs` — Deck domain and editing rules.
+- `src/RadishDeck.Core/Actions/` — Action definitions, registry and dispatcher.
+- `src/RadishDeck.Infrastructure/DeckJsonStore.cs` — versioned JSON persistence.
+- `src/RadishDeck.Desktop/Services/DesktopActions.cs` — registered Desktop executors.
+- `tests/RadishDeck.Lifecycle.Tests/DeckChecks.cs` — Core, persistence and action acceptance checks.

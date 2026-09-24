@@ -1,255 +1,406 @@
 # Radish Deck
 
+```{=html}
 <p align="center">
-<img src="assets/branding/radishdeck_logo_horizontal.png" alt="Radish Deck Logo">
+```
+`<img src="assets/branding/radishdeck_logo_horizontal.png" alt="Radish Deck Logo">`{=html}
+```{=html}
 </p>
+```
+```{=html}
+<p align="center">
+```
+`<a href="#-русский">`{=html}🇷🇺 Русский`</a>`{=html} ·
+`<a href="#-english">`{=html}🇬🇧 English`</a>`{=html}
+```{=html}
+</p>
+```
+
+------------------------------------------------------------------------
 
 # 🇷🇺 Русский
 
-## Персональный центр управления компьютером
+## Универсальный конструктор персональных пультов управления
 
-**Radish Deck** — расширяемая Windows-платформа для управления компьютером, мониторинга системы и выполнения автоматизированных действий.
+**Radish Deck** --- система создания персональных панелей управления.
 
-Текущая версия:
+Пользователь сам собирает свой Deck под свои задачи:
 
-`0.1.4-alpha`
+-   управление компьютером;
+-   запуск приложений;
+-   управление сервисами;
+-   мониторинг системы;
+-   автоматизация;
+-   подключение удалённых узлов.
+
+**Текущая версия:** `0.2.2-alpha`
+
+**Следующая версия:** `0.2.1-alpha (planned)`
 
 Проект находится в активной разработке.
 
----
+------------------------------------------------------------------------
 
-## Главная идея
+# Главная идея
 
-> Сначала рабочий инструмент. Потом дизайн.
+> RadishDeck --- это не готовый пульт. Это конструктор пультов.
 
-Radish Deck создаётся как единый центр управления:
+Пользователь создаёт собственные интерфейсы управления:
 
-- компьютером;
-- приложениями;
-- системными действиями;
-- автоматизацией;
-- пользовательскими панелями управления.
+-   Gaming Deck;
+-   Admin Deck;
+-   Home Deck;
+-   Work Deck.
 
----
+------------------------------------------------------------------------
 
-## Архитектура действий
+# Архитектура
 
-Основная концепция:
+    RadishDeck.Desktop
+            |
+            | Конструктор
+            |
+            v
 
-```
-Element
-   |
-   ↓
-Action
-   |
-   ↓
-Executor
-   |
-   ↓
-State
-```
+    RadishDeck.Server
+            |
+            | Центр управления
+            |
+            +-------------+
+            |             |
+            v             v
 
----
+          Web          Mobile
+        (пульт)       (пульт)
 
-## Технологии
+------------------------------------------------------------------------
 
-- C#
-- .NET 8+
-- WPF
-- ASP.NET Core
-- SQLite
-- REST API
-- WebSocket
+# Компоненты
 
----
+## RadishDeck.Desktop
 
-## Статус разработки
+Desktop --- это только конструктор.
 
-Версия:
+Используется для:
 
-```
-0.1.4-alpha
-```
+-   создания страниц;
+-   добавления элементов;
+-   настройки внешнего вида;
+-   назначения действий;
+-   редактирования Deck.
 
-Реализовано:
+Desktop не является ежедневным пультом.
 
-✅ Desktop Application  
-✅ Server Application  
-✅ Server Status API  
-✅ Desktop Server Control  
-✅ Core Models  
-✅ Application Version Management  
-✅ First Action Execution Pipeline  
+------------------------------------------------------------------------
 
----
+## RadishDeck.Server
 
-## Установка
+Server --- центральный компонент системы.
 
-Клонирование:
+Планируется:
 
-```bash
-git clone https://github.com/Winland5720/RadishDeck.git
-```
+-   хранение Deck;
+-   выполнение Actions;
+-   API;
+-   состояние устройств;
+-   управление узлами.
 
-Сборка:
+------------------------------------------------------------------------
 
-```bash
-dotnet build RadishDeck.sln
-```
+## Web Client
 
-Запуск:
+Web --- будущий рабочий пульт.
 
-```bash
-dotnet run --project src/RadishDeck.Desktop
-```
+Открывается:
 
----
+-   на компьютере;
+-   планшете;
+-   телефоне.
 
-## Документация
+------------------------------------------------------------------------
 
-```
-docs/
-```
+## Mobile Client
 
-Основные документы:
+Будущий клиент.
 
-- ARCHITECTURE.md
-- PROJECT_STRUCTURE.md
-- DEVELOPMENT_PLAN.md
-- DEVELOPMENT_RULES.md
-- TECH_STACK.md
-- BUILD.md
+Использует тот же API, что и Web.
 
----
+------------------------------------------------------------------------
+
+# Что реализовано в 0.2.0-alpha
+
+-   Desktop приложение;
+-   Server приложение;
+-   Server Status API;
+-   Server lifecycle control;
+-   Core модели;
+-   Deck Editor;
+-   Pages;
+-   Elements;
+-   Action Registry;
+-   Action Dispatcher;
+-   JSON хранение Deck.
+
+Доступные действия:
+
+-   `server.start`
+-   `server.stop`
+-   `url.open`
+-   `process.start`
+
+------------------------------------------------------------------------
+
+# План 0.2.1-alpha
+
+## Action System
+
+-   `process.start`;
+-   запуск программ через действия;
+-   параметры запуска.
+
+## Server
+
+-   Server-owned Deck;
+-   API работы с Deck;
+-   выполнение действий через Server.
+
+## Web
+
+-   первый Web Control Panel;
+-   отображение Deck;
+-   выполнение действий через API.
+
+## Desktop
+
+-   подготовка WebView2 Preview;
+-   единый HTML Renderer.
+
+------------------------------------------------------------------------
+
+# Главный принцип
+
+## Один Renderer
+
+Desktop Preview и Web должны использовать один HTML интерфейс.
+
+Не делать отдельный WPF интерфейс и отдельный Web интерфейс.
+
+------------------------------------------------------------------------
+
+# Технологии
+
+-   C#
+-   .NET
+-   WPF
+-   ASP.NET Core
+-   REST API
+-   WebView2
+-   HTML / CSS / JS
+
+------------------------------------------------------------------------
+
+# Документация
+
+    docs/
+
+    VISION.md
+    ARCHITECTURE.md
+    DEVELOPMENT_PLAN.md
+    DESIGNER.md
+    CODEX_CONTEXT.md
+    DEVELOPMENT_RULES.md
+    BUILD.md
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 
 # 🇬🇧 English
 
-## Personal Computer Control Center
+## Universal personal control panel constructor
 
-**Radish Deck** is an extensible Windows platform for computer control, system monitoring and automated actions.
+**Radish Deck** is a system for creating personal control panels.
 
-Current version:
+Users build their own Deck for their own needs:
 
-`0.1.4-alpha`
+-   computer control;
+-   application launching;
+-   service management;
+-   system monitoring;
+-   automation;
+-   remote node connection.
+
+**Current version:** `0.2.2-alpha`
+
+**Next version:** `0.2.1-alpha (planned)`
 
 The project is under active development.
 
----
+------------------------------------------------------------------------
 
-## Main Idea
+# Core Idea
 
-> Build the tool first. Design comes second.
+> RadishDeck is not a ready-made panel. It is a panel constructor.
 
-Radish Deck is designed as a unified control center for:
+Users create their own interfaces:
 
-- computer management;
-- applications;
-- system actions;
-- automation;
-- custom dashboards.
+-   Gaming Deck;
+-   Admin Deck;
+-   Home Deck;
+-   Work Deck.
 
----
+------------------------------------------------------------------------
 
-## Action Architecture
+# Architecture
 
-Main concept:
+    RadishDeck.Desktop
+            |
+            | Designer
+            |
+            v
 
-```
-Element
-   |
-   ↓
-Action
-   |
-   ↓
-Executor
-   |
-   ↓
-State
-```
+    RadishDeck.Server
+            |
+            | Control center
+            |
+            +-------------+
+            |             |
+            v             v
 
----
+          Web          Mobile
+        (Panel)       (Panel)
 
-## Technology Stack
+------------------------------------------------------------------------
 
-- C#
-- .NET 8+
-- WPF
-- ASP.NET Core
-- SQLite
-- REST API
-- WebSocket
+# Components
 
----
+## RadishDeck.Desktop
 
-## Development Status
+Desktop is the designer only.
 
-Version:
+Used for:
 
-```
-0.1.4-alpha
-```
+-   creating pages;
+-   adding elements;
+-   styling;
+-   assigning actions;
+-   editing Deck.
 
-Implemented:
+------------------------------------------------------------------------
 
-✅ Desktop Application  
-✅ Server Application  
-✅ Server Status API  
-✅ Desktop Server Control  
-✅ Core Models  
-✅ Application Version Management  
-✅ First Action Execution Pipeline  
+## RadishDeck.Server
 
----
+Server is the central system component.
 
-## Installation
+Planned responsibilities:
 
-Clone:
+-   Deck storage;
+-   Action execution;
+-   API;
+-   device state;
+-   node management.
 
-```bash
-git clone https://github.com/Winland5720/RadishDeck.git
-```
+------------------------------------------------------------------------
 
-Build:
+## Web Client
 
-```bash
-dotnet build RadishDeck.sln
-```
+Future working control panel.
 
-Run:
+Available from:
 
-```bash
-dotnet run --project src/RadishDeck.Desktop
-```
+-   desktop;
+-   tablet;
+-   phone.
 
----
+------------------------------------------------------------------------
 
-## Documentation
+## Mobile Client
 
-```
-docs/
-```
+Future client.
 
-Main documents:
+Uses the same API as Web.
 
-- ARCHITECTURE.md
-- PROJECT_STRUCTURE.md
-- DEVELOPMENT_PLAN.md
-- DEVELOPMENT_RULES.md
-- TECH_STACK.md
-- BUILD.md
+------------------------------------------------------------------------
 
----
+# Implemented in 0.2.0-alpha
 
-## Screenshots
+-   Desktop application;
+-   Server application;
+-   Server Status API;
+-   Server lifecycle control;
+-   Core models;
+-   Deck Editor;
+-   Pages;
+-   Elements;
+-   Action Registry;
+-   Action Dispatcher;
+-   JSON Deck storage.
 
-Screenshots will be added later:
+Available actions:
 
-```
-assets/screenshots/
-```
+-   `server.start`
+-   `server.stop`
+-   `url.open`
 
----
+------------------------------------------------------------------------
 
-## License
+# 0.2.1-alpha Roadmap
 
-The project is currently under development.
+## Action System
+
+-   `process.start`;
+-   application launch actions;
+-   launch parameters.
+
+## Server
+
+-   Server-owned Deck;
+-   Deck API;
+-   server-side action execution.
+
+## Web
+
+-   first Web Control Panel;
+-   Deck rendering;
+-   API actions.
+
+## Desktop
+
+-   WebView2 Preview preparation;
+-   single HTML Renderer.
+
+------------------------------------------------------------------------
+
+# Principle
+
+## One Renderer
+
+Desktop Preview and Web should use the same HTML interface.
+
+No separate WPF UI and Web UI.
+
+------------------------------------------------------------------------
+
+# Technology Stack
+
+-   C#
+-   .NET
+-   WPF
+-   ASP.NET Core
+-   REST API
+-   WebView2
+-   HTML / CSS / JS
+
+------------------------------------------------------------------------
+
+# Documentation
+
+    docs/
+
+    VISION.md
+    ARCHITECTURE.md
+    DEVELOPMENT_PLAN.md
+    DESIGNER.md
+    CODEX_CONTEXT.md
+    DEVELOPMENT_RULES.md
+    BUILD.md

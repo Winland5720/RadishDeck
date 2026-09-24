@@ -9,5 +9,18 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RadishDeck.Core\RadishDeck.Core.csproj" />
+    <ProjectReference Include="..\RadishDeck.Infrastructure\RadishDeck.Infrastructure.csproj" />
+    <ProjectReference Include="..\RadishDeck.Server\RadishDeck.Server.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
+  <!-- Build-only dependency; Server remains a separate process. -->
+  <Target Name="BundleServerForBuild" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="..\RadishDeck.Server\RadishDeck.Server.csproj" Targets="Publish"
+             RemoveProperties="TargetFramework;PublishUrl"
+             Properties="Configuration=$(Configuration);PublishDir=$([System.IO.Path]::GetFullPath('$(TargetDir)server/'));UseAppHost=true" />
+  </Target>
+  <Target Name="BundleServerForPublish" AfterTargets="Publish">
+    <MSBuild Projects="..\RadishDeck.Server\RadishDeck.Server.csproj" Targets="Publish"
+             RemoveProperties="TargetFramework;PublishUrl"
+             Properties="Configuration=$(Configuration);PublishDir=$([System.IO.Path]::GetFullPath('$(PublishDir)server/'));UseAppHost=true" />
+  </Target>
 </Project>

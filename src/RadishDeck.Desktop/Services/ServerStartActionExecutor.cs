@@ -7,32 +7,22 @@ namespace RadishDeck.Desktop.Services;
 public sealed class ServerStartActionExecutor : IActionExecutor
 {
     private readonly ServerLauncherService _serverLauncherService;
-    private readonly Func<(string IpAddress, int Port)> _configuration;
+    private readonly Func<ServerConfiguration> _configuration;
 
-    public ServerStartActionExecutor(ServerLauncherService serverLauncherService, Func<(string IpAddress, int Port)> configuration)
+    public ServerStartActionExecutor(ServerLauncherService serverLauncherService, ServerConfiguration configuration)
+    {
+        _serverLauncherService = serverLauncherService;
+        _configuration = () => configuration;
+    }
+
+    public ServerStartActionExecutor(ServerLauncherService serverLauncherService, Func<ServerConfiguration> configuration)
     {
         _serverLauncherService = serverLauncherService;
         _configuration = configuration;
     }
 
-    public async Task<State> ExecuteAsync(Element element, CoreAction action, CancellationToken cancellationToken = default)
-    {
-        if (action.Type != "server.start")
-        {
-            return new State { Status = "Error", Message = $"Unsupported action: {action.Type}" };
-        }
-
-        try
-        {
-            var (ipAddress, port) = _configuration();
-            var started = await _serverLauncherService.StartAsync(ipAddress, port, cancellationToken);
-            return started
-                ? new State { Status = "Running", Message = $"{element.Name} completed" }
-                : new State { Status = "Error", Message = "Server did not become available" };
-        }
-        catch (Exception exception)
-        {
-            return new State { Status = "Error", Message = exception.Message };
-        }
-    }
+    public Task<State> ExecuteAsync(Element element, CoreAction action, CancellationToken cancellationToken = default) =>
+        action.Type == "server.start"
+            ? _serverLauncherService.StartAsync(_configuration(), cancellationToken)
+            : Task.FromResult(new State { Status = "Error", Message = $"Unsupported action: {action.Type}" });
 }

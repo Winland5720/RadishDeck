@@ -3,9 +3,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RadishDeck.Core\RadishDeck.Core.csproj" />
-    <ProjectReference Include="..\RadishDeck.Infrastructure\RadishDeck.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/RadishDeck.Core/RadishDeck.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -191,3 +191,5 @@ Build functionality first.
 Improve interface later.
 
 Do not create complex design before validating system functionality.
+
+
