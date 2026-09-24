@@ -1,20 +1,18 @@
 # Radish Deck
 
-```{=html}
+<h1 align="center">
+  Radish Deck
+</h1>
+
 <p align="center">
-```
-`<img src="assets/branding/radishdeck_logo_horizontal.png" alt="Radish Deck Logo">`{=html}
-```{=html}
+  <img src="assets/branding/radishdeck_logo_horizontal.png" alt="Radish Deck Logo">
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<a href="#-русский">`{=html}🇷🇺 Русский`</a>`{=html} ·
-`<a href="#-english">`{=html}🇬🇧 English`</a>`{=html}
-```{=html}
+  🇷🇺 Русский · 🇬🇧 English
 </p>
-```
+
+---
 
 ------------------------------------------------------------------------
 
