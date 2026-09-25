@@ -76,7 +76,7 @@
                         <Button Content="＋ Button" Click="AddElement_Click"/>
                         <Button Content="Удалить элемент" Click="DeleteElement_Click"/>
                     </WrapPanel>
-                    <Grid x:Name="DeckGrid" Margin="0,12" Background="#101416"/>
+                    <Canvas x:Name="DeckGrid" Margin="0,12" Background="#101416" Width="800" Height="500"/>
                 </DockPanel>
             </Border>
             <Border Grid.Column="2" Background="#0D1012" BorderBrush="#24282B" BorderThickness="1" Padding="10">
@@ -93,9 +93,10 @@
                         <StackPanel x:Name="ProcessPathPanel" Visibility="Collapsed">
                             <TextBlock Text="Executable (.exe absolute path)"/><TextBox x:Name="ProcessPathTextBox"/>
                         </StackPanel>
-                        <TextBlock Text="X / Y (0–2)"/>
+                        <TextBlock Text="Type: Button"/>
+                        <TextBlock Text="X / Y (Canvas)"/>
                         <UniformGrid Columns="2"><TextBox x:Name="XTextBox"/><TextBox x:Name="YTextBox"/></UniformGrid>
-                        <TextBlock Text="Ширина / Высота (1–3)"/>
+                        <TextBlock Text="Ширина / Высота (Canvas)"/>
                         <UniformGrid Columns="2"><TextBox x:Name="WidthTextBox"/><TextBox x:Name="HeightTextBox"/></UniformGrid>
                         <Button Content="Применить свойства" Click="ApplyElement_Click"/>
                         <Button x:Name="ExecuteElementButton" Content="Выполнить элемент" Click="ExecuteElement_Click"/>

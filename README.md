@@ -397,3 +397,22 @@ No separate WPF UI and Web UI.
     CODEX_CONTEXT.md
     DEVELOPMENT_RULES.md
     BUILD.md
+
+## RadishDeck 0.4.0-alpha
+
+Stage 1–2 подготавливают переход от Grid-only Button модели к архитектуре
+Canvas Designer. Добавлены Core-модели CanvasProfile, DeviceProfile и секции
+Element V2: Layout, Content, Appearance, Behavior, Action.
+
+В существующий Element подключены nullable-секции V2. Identity пока остаётся
+плоской группой Id, Name, Type. Старые Grid-поля, ActionId, Url и Color сохранены.
+Отсутствующие V2-секции не записываются в JSON; существующие проекты открываются
+без миграции. Заданные секции сериализуются как дополнительные данные.
+
+Renderer Contract подготовлен на уровне Core.
+Desktop UI и Web Runtime по-прежнему сохраняют совместимость со старыми полями.
+
+Stage 4 добавляет первый ощутимый Designer Preview: Desktop показывает
+Element V2 Button на Canvas в координатах X/Y, позволяет выбрать элемент,
+перетащить его мышью и изменить координаты в панели свойств. Это MVP WPF
+адаптера Renderer Contract; Web Runtime и формат Deck остаются прежними.

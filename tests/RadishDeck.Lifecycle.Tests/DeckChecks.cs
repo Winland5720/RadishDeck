@@ -3,15 +3,117 @@ using RadishDeck.Core.Actions;
 using RadishDeck.Core.Execution;
 using RadishDeck.Core.Models;
 using RadishDeck.Desktop.Services;
+using RadishDeck.Desktop.Rendering;
 using RadishDeck.Infrastructure;
 using RadishDeck.Infrastructure.Actions.Executors;
 using RadishDeck.Core.Models.V2;
+using RadishDeck.Core.Rendering;
 using CoreAction = RadishDeck.Core.Models.Action;
 
 internal static class DeckChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> test)
     {
+        await test("Renderer contract maps Element V2 without UI dependencies", () =>
+        {
+            var element = new Element
+            {
+                Id = Guid.NewGuid(), Type = "Button",
+                Layout = new ElementLayout { X = 10, Y = 20, Width = 300, Height = 100 },
+                Content = new ElementContent { Text = "Restart", Image = "restart.png" },
+                Appearance = new ElementAppearance { Background = "#E11D2E" }
+            };
+            var rendered = RenderElement.From(element);
+            Check(rendered.Id == element.Id && rendered.Type == "Button");
+            Check(rendered.Layout.X == 10 && rendered.Layout.Y == 20 && rendered.Layout.Width == 300 && rendered.Layout.Height == 100);
+            Check(rendered.Content?.Text == "Restart" && rendered.Content.Image == "restart.png");
+            Check(rendered.Appearance?.Background == "#E11D2E");
+            Check(typeof(IRenderer).GetMethod(nameof(IRenderer.Render)) is not null &&
+                  typeof(IRenderContext).GetMethod(nameof(IRenderContext.Draw)) is not null);
+            return Task.CompletedTask;
+        });
+        await test("WPF Renderer receives RenderElement through the contract", () =>
+        {
+            var rendered = RenderElement.From(new Element { Type = "Button", Layout = new() { Width = 1, Height = 1 } });
+            var context = new RecordingRenderContext();
+            new WpfCanvasRenderer().Render(new[] { rendered }, context);
+            Check(context.Drawn.Count == 1 && context.Drawn[0] == rendered);
+            return Task.CompletedTask;
+        });
+        await test("Renderer contract rejects legacy Element without V2 layout", () =>
+        {
+            try { RenderElement.From(new Element { Type = "Button" }); }
+            catch (InvalidOperationException) { return Task.CompletedTask; }
+            throw new InvalidOperationException("Expected V2 layout requirement");
+        });
+
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        await test("Legacy Element has no V2 sections", () =>
+        {
+            var element = new Element { Name = "Legacy", Type = "Button", ActionId = "url.open" };
+            Check(element.Layout is null && element.Content is null && element.Appearance is null &&
+                  element.Behavior is null && element.Action is null);
+            using var json = JsonDocument.Parse(JsonSerializer.Serialize(element, options));
+            foreach (var section in new[] { "layout", "content", "appearance", "behavior", "action" })
+                Check(!json.RootElement.TryGetProperty(section, out _));
+            Check(element.GridWidth == 1 && element.GridHeight == 1);
+            return Task.CompletedTask;
+        });
+        await test("Element Canvas layout leaves legacy geometry intact", () =>
+        {
+            var element = new Element { GridX = 2, Layout = new() { X = 100.5, Y = 200, Width = 300, Height = 100 } };
+            Check(element.Layout.X == 100.5 && element.GridX == 2 && element.GridWidth == 1);
+            return Task.CompletedTask;
+        });
+        await test("Element content and appearance are independent of legacy fields", () =>
+        {
+            var element = new Element { Name = "Internal", Color = "#123456",
+                Content = new() { Text = "Visible", Image = "image.png" },
+                Appearance = new() { Background = "#E11D2E", Radius = 20, Opacity = 0.5 } };
+            Check(element.Content.Text == "Visible" && element.Appearance.Radius == 20 &&
+                  element.Name == "Internal" && element.Color == "#123456" && element.Action is null);
+            return Task.CompletedTask;
+        });
+        await test("Element V2 roundtrip preserves all sections and legacy binding", () =>
+        {
+            var element = new Element { Name = "Old", Type = "Button", GridX = 1, ActionId = "url.open",
+                Url = "https://example.com/", Color = "#123456",
+                Layout = new() { X = 12.5, Y = 30, Width = 200, Height = 80, Layer = 2, Alignment = "center" },
+                Content = new() { Text = "New", Image = "image.png", Icon = "icon", Logo = "logo.png", Media = "media" },
+                Appearance = new() { Background = "#E11D2E", Color = "#FFFFFF", Border = "border", Radius = 20,
+                    Shadow = "shadow", Font = "font", Opacity = 0.75 },
+                Behavior = new() { Hover = "hover", Click = "click", Animation = "fade", State = "Normal" },
+                Action = new() { ActionId = "future", Type = "process.start", Parameters = new() { ["path"] = "app.exe" } } };
+            var json = JsonSerializer.Serialize(element, options);
+            var restored = JsonSerializer.Deserialize<Element>(json, options)!;
+            Check(restored.Id == element.Id && restored.ActionId == "url.open" && restored.GridX == 1 &&
+                  restored.Url == element.Url && restored.Color == element.Color);
+            Check(restored.Layout?.X == 12.5 && restored.Content?.Logo == "logo.png" &&
+                  restored.Appearance?.Opacity == 0.75 && restored.Behavior?.Animation == "fade" &&
+                  restored.Action?.Parameters["path"] == "app.exe");
+            Check(JsonSerializer.Serialize(restored, options) == json);
+            return Task.CompletedTask;
+        });
+        await test("Fixed legacy Element JSON retains its fields on roundtrip", () =>
+        {
+            const string json = """
+                {"id":"ed3ec153-aaea-41bf-8103-f71d30555fa9","name":"Legacy","type":"Button",
+                 "gridX":1,"gridY":2,"gridWidth":2,"gridHeight":1,"actionId":"url.open",
+                 "url":"https://example.com/","color":"#112233"}
+                """;
+            var element = JsonSerializer.Deserialize<Element>(json, options)!;
+            Check(element.Layout is null && element.Action is null && element.Content is null &&
+                  element.Appearance is null && element.Behavior is null);
+            using var expected = JsonDocument.Parse(json);
+            using var actual = JsonDocument.Parse(JsonSerializer.Serialize(element, options));
+            Check(actual.RootElement.EnumerateObject().Count() == expected.RootElement.EnumerateObject().Count());
+            foreach (var property in expected.RootElement.EnumerateObject())
+                Check(actual.RootElement.GetProperty(property.Name).ToString() == property.Value.ToString());
+            var explicitNull = JsonSerializer.Deserialize<Element>("{\"layout\":null,\"content\":null,\"appearance\":null,\"behavior\":null,\"action\":null}", options)!;
+            Check(explicitNull.Layout is null && explicitNull.Action is null);
+            return Task.CompletedTask;
+        });
+
         await test("Element v2 models create and roundtrip through JSON", () =>
         {
             var canvas = new CanvasProfile { Name = "Desktop", Width = 1920, Height = 1080,
@@ -175,6 +277,13 @@ internal static class DeckChecks
     private static void Check(bool condition)
     {
         if (!condition) throw new InvalidOperationException("Deck assertion failed");
+    }
+
+    private sealed class RecordingRenderContext : IRenderContext
+    {
+        public List<RenderElement> Drawn { get; } = new();
+        public void Clear() => Drawn.Clear();
+        public void Draw(RenderElement element) => Drawn.Add(element);
     }
     private static async Task Reject(Func<Task> operation)
     {

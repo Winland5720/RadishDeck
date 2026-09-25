@@ -5,7 +5,9 @@ using System.Windows.Media;
 using RadishDeck.Core;
 using RadishDeck.Core.Actions;
 using RadishDeck.Core.Models;
+using RadishDeck.Core.Rendering;
 using RadishDeck.Desktop.Services;
+using RadishDeck.Desktop.Rendering;
 using RadishDeck.Infrastructure;
 using CoreAction = RadishDeck.Core.Models.Action;
 using DeckPage = RadishDeck.Core.Models.Page;
@@ -19,6 +21,7 @@ public partial class MainWindow : Window
     private readonly ServerSettingsStore _settingsStore = new();
     private readonly ActionRegistry _registry;
     private readonly ActionDispatcher _dispatcher;
+    private readonly WpfCanvasRenderer _renderer = new();
     private Deck _deck = new();
     private ServerSettings _serverSettings = ServerSettings.Defaults;
     private DeckPage? _page;
@@ -102,29 +105,24 @@ public partial class MainWindow : Window
 
     private void RenderDeck()
     {
-        DeckGrid.Children.Clear();
-        DeckGrid.RowDefinitions.Clear();
-        DeckGrid.ColumnDefinitions.Clear();
-        for (var i = 0; i < DeckEditor.GridSize; i++)
-        {
-            DeckGrid.RowDefinitions.Add(new RowDefinition());
-            DeckGrid.ColumnDefinitions.Add(new ColumnDefinition());
-        }
         if (_page is null) return;
         foreach (var element in _page.Elements)
         {
-            var button = new Button
-            {
-                Content = element.Name, Tag = element, FontSize = 17,
-                BorderBrush = Brushes.Crimson, BorderThickness = new Thickness(element == _selected ? 3 : 1)
-            };
-            button.Click += ElementClick;
-            Grid.SetColumn(button, element.GridX);
-            Grid.SetRow(button, element.GridY);
-            Grid.SetColumnSpan(button, element.GridWidth);
-            Grid.SetRowSpan(button, element.GridHeight);
-            DeckGrid.Children.Add(button);
+            element.Layout ??= new() { X = element.GridX * 100 + 20, Y = element.GridY * 80 + 20,
+                Width = element.GridWidth * 100, Height = element.GridHeight * 60 };
+            element.Content ??= new() { Text = element.Name };
         }
+        var context = new WpfCanvasRenderContext(DeckGrid, id =>
+        {
+            _selected = _page.Elements.FirstOrDefault(e => e.Id == id);
+            RenderProperties();
+        }, (id, x, y) =>
+        {
+            var element = _page.Elements.FirstOrDefault(e => e.Id == id);
+            if (element?.Layout is not null) { element.Layout.X = x; element.Layout.Y = y; }
+            if (element == _selected) { XTextBox.Text = x.ToString("0.##"); YTextBox.Text = y.ToString("0.##"); }
+        });
+        _renderer.Render(_page.Elements.Select(RenderElement.From).ToArray(), context);
     }
 
     private void ElementClick(object sender, RoutedEventArgs e)
@@ -142,10 +140,10 @@ public partial class MainWindow : Window
         ActionComboBox.SelectedValue = _selected.ActionId;
         UrlTextBox.Text = _selected.Url;
         ProcessPathTextBox.Text = _selected.Url;
-        XTextBox.Text = _selected.GridX.ToString();
-        YTextBox.Text = _selected.GridY.ToString();
-        WidthTextBox.Text = _selected.GridWidth.ToString();
-        HeightTextBox.Text = _selected.GridHeight.ToString();
+        XTextBox.Text = (_selected.Layout?.X ?? _selected.GridX).ToString("0.##");
+        YTextBox.Text = (_selected.Layout?.Y ?? _selected.GridY).ToString("0.##");
+        WidthTextBox.Text = (_selected.Layout?.Width ?? _selected.GridWidth).ToString("0.##");
+        HeightTextBox.Text = (_selected.Layout?.Height ?? _selected.GridHeight).ToString("0.##");
         ExecuteElementButton.IsEnabled = !_executing.Contains(_selected.Id);
     }
 
@@ -163,11 +161,18 @@ public partial class MainWindow : Window
         {
             if (ActionComboBox.SelectedValue is not string id || !_registry.TryGet(id, out _, out _))
                 throw new ArgumentException("Select a registered action");
-            if (!int.TryParse(XTextBox.Text, out var x) || !int.TryParse(YTextBox.Text, out var y) ||
-                !int.TryParse(WidthTextBox.Text, out var width) || !int.TryParse(HeightTextBox.Text, out var height))
-                throw new ArgumentException("Position and size must be integers");
+            if (!double.TryParse(XTextBox.Text, out var x) || !double.TryParse(YTextBox.Text, out var y) ||
+                !double.TryParse(WidthTextBox.Text, out var width) || !double.TryParse(HeightTextBox.Text, out var height) ||
+                width <= 0 || height <= 0)
+                throw new ArgumentException("Position and size must be valid positive numbers");
             var value = id == "process.start" ? ProcessPathTextBox.Text.Trim() : UrlTextBox.Text.Trim();
-            DeckEditor.UpdateElement(_page, _selected, ElementNameTextBox.Text, id, value, x, y, width, height);
+            var gridX = Math.Clamp((int)Math.Round(x / 100) , 0, 2);
+            var gridY = Math.Clamp((int)Math.Round(y / 80), 0, 2);
+            var gridWidth = Math.Clamp((int)Math.Round(width / 100), 1, 3);
+            var gridHeight = Math.Clamp((int)Math.Round(height / 60), 1, 3);
+            DeckEditor.UpdateElement(_page, _selected, ElementNameTextBox.Text, id, value, gridX, gridY, gridWidth, gridHeight);
+            _selected.Layout = new() { X = x, Y = y, Width = width, Height = height, Layer = _selected.Layout?.Layer ?? 0 };
+            _selected.Content = new() { Text = ElementNameTextBox.Text };
             RenderDeck();
             return true;
         }
