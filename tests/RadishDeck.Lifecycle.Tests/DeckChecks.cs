@@ -5,12 +5,38 @@ using RadishDeck.Core.Models;
 using RadishDeck.Desktop.Services;
 using RadishDeck.Infrastructure;
 using RadishDeck.Infrastructure.Actions.Executors;
+using RadishDeck.Core.Models.V2;
 using CoreAction = RadishDeck.Core.Models.Action;
 
 internal static class DeckChecks
 {
     public static async Task RunAsync(Func<string, Func<Task>, Task> test)
     {
+        await test("Element v2 models create and roundtrip through JSON", () =>
+        {
+            var canvas = new CanvasProfile { Name = "Desktop", Width = 1920, Height = 1080,
+                Resolution = "1920x1080", Orientation = CanvasOrientation.Landscape,
+                Background = "#111111", Assets = new() { "logo.png" } };
+            var device = new DeviceProfile { Name = "Mobile", Width = 390, Height = 844, Type = DeviceProfileType.Mobile };
+            var layout = new ElementLayout { X = 100, Y = 200, Width = 300, Height = 100, Layer = 2, Alignment = "center" };
+            Check(canvas.Orientation == CanvasOrientation.Landscape && device.Type == DeviceProfileType.Mobile && layout.X == 100);
+            var json = JsonSerializer.Serialize(new { canvas, device, layout,
+                content = new ElementContent { Text = "Restart" },
+                appearance = new ElementAppearance { Background = "#E11D2E", Radius = 20 },
+                behavior = new ElementBehavior { State = "Normal" },
+                action = new ElementAction { Type = "process.start" } },
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            using var document = JsonDocument.Parse(json);
+            Check(document.RootElement.GetProperty("canvas").GetProperty("width").GetInt32() == 1920);
+            Check(document.RootElement.GetProperty("action").GetProperty("type").GetString() == "process.start");
+            var restored = JsonSerializer.Deserialize<JsonElement>(json);
+            var restoredCanvas = JsonSerializer.Deserialize<CanvasProfile>(restored.GetProperty("canvas").GetRawText(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var restoredDevice = JsonSerializer.Deserialize<DeviceProfile>(restored.GetProperty("device").GetRawText(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var restoredLayout = JsonSerializer.Deserialize<ElementLayout>(restored.GetProperty("layout").GetRawText(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            Check(restoredCanvas?.Width == 1920 && restoredDevice?.Type == DeviceProfileType.Mobile && restoredLayout?.Height == 100);
+            return Task.CompletedTask;
+        });
+
         await test("Registry registration, lookup, duplicate rejection", async () =>
         {
             var registry = new ActionRegistry();
@@ -137,7 +163,7 @@ internal static class DeckChecks
             var reads = 0;
             var config = ServerConfiguration.Create("127.0.0.1", "5187");
             var registry = DesktopActions.Create(server, () => { reads++; return config; });
-            Check(registry.Definitions.Count == 3 && registry.TryGet("server.start", out _, out _));
+            Check(registry.Definitions.Count == 4 && registry.TryGet("server.start", out _, out _));
             var dispatcher = new ActionDispatcher(registry);
             var start = await dispatcher.ExecuteAsync(new(), new CoreAction { Type = "server.start" });
             Check(start.Status == "Error" && server.Snapshot.Status == ServerLifecycle.Error && reads == 1);
