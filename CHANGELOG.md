@@ -1,255 +1,113 @@
-# Changelog
+# Changelog — RadishDeck
 
-Все значимые изменения проекта Radish Deck.
+История изменений / Change history. Новые записи расположены первыми; исторические функции не обязательно доступны в текущей оболочке.
 
-All significant changes of the Radish Deck project.
+Newest entries first; historical features are not necessarily exposed in the current shell.
 
-------------------------------------------------------------------------
+## Stage 5 — Application Shell + WebView2 Foundation (Unreleased)
 
-# 0.1.0-alpha
+**RU:** Stage 5 завершён и вручную проверен; новая версия релиза не назначалась. Версия сборки остаётся 0.3.1-alpha.
 
-Дата / Date:
+**EN:** Stage 5 is complete and manually validated; no new release version has been assigned. The assembly version remains 0.3.1-alpha.
 
-19.09.2026
+## Добавлено / Added
 
-## Added / Добавлено
+**RU:** Локальный WebView2 UI, единая навигация, структурированный C# ↔ JavaScript bridge и Web Designer prototype. Canvas 1920×1080, zoom 50%, создание Button, выделение, список элементов, свойства, drag, clamp и сохранение координат.
 
--   Создан новый проект Radish Deck.
+**EN:** Local WebView2 UI, shared navigation, structured C# ↔ JavaScript bridge and Web Designer prototype. A 1920×1080 Canvas, 50% zoom, Button creation, selection, element listing, properties, dragging, clamping and coordinate persistence.
 
--   Created a new Radish Deck project.
+## Изменено / Changed
 
--   Добавлена базовая документация проекта.
+**RU:** WPF MainWindow стал WebView2 host. WpfCanvasRenderer сохранён как legacy/prototype. Существующий ServerLauncherService подключён к новой оболочке: Start/Stop/Restart, IPv4 selector, порт, статус, URL, открытие и копирование адреса. Drag выполняется локально в JS с финальной синхронизацией C#.
 
--   Added initial project documentation.
+**EN:** WPF MainWindow became a WebView2 host. WpfCanvasRenderer remains legacy/prototype code. The existing ServerLauncherService is connected to the new shell: Start/Stop/Restart, IPv4 selection, port, status, URL, open and copy actions. Dragging stays local to JS with final C# synchronization.
 
--   Описана архитектура системы.
+## Исправлено / Fixed
 
--   Defined system architecture.
+**RU:** Двойной JSON parsing, несовпадение nested layout contract, undefined/NaN, ошибки ElementMove, прерывание drag из-за DOM rerender, попадание Designer errors в Server Status. Стандартное контекстное меню WebView2 отключено настройкой host; внешний Web Runtime не изменён.
 
--   Определён технологический стек C# / .NET.
+**EN:** Fixed double JSON parsing, nested layout contract mismatches, undefined/NaN values, ElementMove errors, drag interruptions caused by DOM replacement and Designer errors appearing in Server Status. The default WebView2 context menu is disabled at host level; external Web Runtime behavior is unchanged.
 
--   Defined technology stack C# / .NET.
+## Проверено / Validated
 
--   Добавлена документация API и WebSocket.
+**RU:** Пользователем подтверждены запуск, навигация, server lifecycle, bind/port/URL, открытие Web Runtime, создание/выбор/drag/clamp, сохранение после перезапуска и отсутствие браузерного контекстного меню. Restore/build/diff-check проходили. Команда dotnet test завершалась без ошибки, но console acceptance runner требует отдельного запуска: это не подтверждение прохождения всех проверок.
 
--   Added API and WebSocket documentation.
+**EN:** User manual validation confirmed startup, navigation, server lifecycle, bind/port/URL, Web Runtime opening, creation/selection/drag/clamp, persistence after restart and context-menu suppression. Restore/build/diff-check passed. The dotnet test command completed without errors, but the console acceptance runner requires a separate invocation; this is not evidence that all checks ran.
 
--   Добавлена документация Element System, Action System и Plugin
-    System.
+## Ограничения / Limitations
 
--   Added Element System, Action System and Plugin System documentation.
+**RU:** Полный Designer, resize, undo/redo, Pages/Layers editing, widgets, QR pairing и production shared renderer не входят в завершённый scope. Logs/Clients/Settings остаются заглушками. Stage 6 не начат.
 
--   Добавлены правила безопасности и тестирования.
+**EN:** A full Designer, resize, undo/redo, Pages/Layers editing, widgets, QR pairing and production shared rendering are outside the completed scope. Logs/Clients/Settings remain placeholders. Stage 6 has not started.
 
--   Added security and testing guidelines.
+## Основа 0.4 — Stages 1–4 (Unreleased)
 
--   Добавлены брендовые материалы Radish Deck.
+**RU:** Добавлены CanvasProfile, DeviceProfile, секции Element V2 Layout/Content/Appearance/Behavior/Action и nullable-подключение к существующему Element без замены deck.v1. Введены IRenderer, IRenderContext и RenderElement. Stage 4 добавил WPF Canvas prototype с Button, выбором и перемещением. Согласованы документы Vision v3 и Designer.
 
--   Added Radish Deck branding materials.
+**EN:** Added CanvasProfile, DeviceProfile, Element V2 Layout/Content/Appearance/Behavior/Action sections and nullable integration into the existing Element without replacing deck.v1. Introduced IRenderer, IRenderContext and RenderElement. Stage 4 added a WPF Canvas prototype with Button rendering, selection and movement. Aligned Vision v3 and Designer documentation.
 
-------------------------------------------------------------------------
+## 0.3.1-alpha
 
-# 0.1.1-alpha
+**RU:** Добавлены локальные настройки сервера server.settings.json (IP, порт, имя) и Restart через существующий lifecycle service без изменения формата Deck и Action System.
 
-## Added / Добавлено
+**EN:** Added local server.settings.json configuration (IP, port, name) and Restart through the existing lifecycle service without changing the Deck format or Action System.
 
--   Создано решение RadishDeck.sln.
+## 0.2.2-alpha
 
--   Created RadishDeck.sln solution.
+**RU:** Добавлен GET /deck: Server читает Deck из существующего deck.v1.json.
 
--   Добавлены проекты:
+**EN:** Added GET /deck: Server reads Deck data from the existing deck.v1.json store.
 
-    -   RadishDeck.Core
-    -   RadishDeck.Desktop
-    -   RadishDeck.Server
-    -   RadishDeck.Infrastructure
+## 0.2.1-alpha
 
--   Desktop приложение запускается.
+**RU:** Добавлены process.start и ProcessStartActionExecutor для запуска программ.
 
--   Desktop application starts successfully.
+**EN:** Added process.start and ProcessStartActionExecutor for launching applications.
 
--   Server приложение запускается.
+## 0.2.0-alpha
 
--   Server application starts successfully.
+**RU:** Добавлены WPF Deck Editor со страницами, сеткой и свойствами; Deck/Page/Element; ActionDefinition/Registry/Dispatcher; versioned JSON storage; действия server.start, server.stop и url.open; создание, выбор, удаление и редактирование Button. Сохранён server lifecycle 0.1.5.
 
--   Добавлен первый Server Status API.
+**EN:** Added the WPF Deck Editor with pages, grid and properties; Deck/Page/Element models; ActionDefinition/Registry/Dispatcher; versioned JSON storage; server.start, server.stop and url.open actions; Button creation, selection, deletion and editing. Preserved the 0.1.5 server lifecycle.
 
--   Added first Server Status API.
+## 0.1.5-alpha
 
-Endpoint:
+**RU:** Server поставляется рядом с Desktop и запускается отдельным процессом. Добавлены Stopped/Starting/Running/Stopping/Error, фиксация конфигурации запуска, диагностика stdout/stderr, проверка /status по имени, версии, состоянию и PID, обработка занятого порта, отмены и аварийного завершения. Историческая проверка этапа: 20/20 lifecycle checks.
 
-GET /status
+**EN:** Server is bundled alongside Desktop and runs as a separate process. Added Stopped/Starting/Running/Stopping/Error states, captured startup configuration, stdout/stderr diagnostics, /status validation by name/version/state/PID and handling of occupied ports, cancellation and unexpected exit. Historical stage validation: 20/20 lifecycle checks.
 
-------------------------------------------------------------------------
+## 0.1.4-alpha
 
-# 0.1.2-alpha
+**RU:** Добавлены первый pipeline выполнения Element, механизм действий и Desktop dashboard prototype.
 
-## Added / Добавлено
+**EN:** Added the first Element execution pipeline, action execution mechanism and Desktop dashboard prototype.
 
--   Desktop подключён к Server Status API.
+## 0.1.3-alpha
 
--   Desktop connected to Server Status API.
+**RU:** Добавлены Core-модели Element, Action и State; централизован источник версии приложения и формат с суффиксом этапа разработки.
 
--   Добавлено отображение статуса сервера.
+**EN:** Added Core Element, Action and State models; centralized application versioning with a development-stage suffix.
 
--   Added server status display.
+## 0.1.2-alpha
 
--   Добавлен ServerLauncherService.
+**RU:** Desktop подключён к Server Status API. Добавлены ServerLauncherService, запуск/остановка сервера, настройка IP и порта, отображение статуса.
 
--   Added ServerLauncherService.
+**EN:** Connected Desktop to the Server Status API. Added ServerLauncherService, server start/stop controls, IP/port configuration and status display.
 
--   Добавлен запуск Server из Desktop.
+## 0.1.1-alpha
 
--   Added Server startup from Desktop.
+**RU:** Созданы RadishDeck.sln и проекты Core, Desktop, Server, Infrastructure. Добавлены запускаемые Desktop/Server и GET /status.
 
--   Добавлена настройка:
+**EN:** Created RadishDeck.sln and Core, Desktop, Server and Infrastructure projects. Added runnable Desktop/Server applications and GET /status.
 
-    -   IP Address
-    -   Port
+## 0.1.0-alpha — 19.09.2026
 
--   Added configuration:
+**RU:** Создан проект, начальная архитектура и документация технологий, API, WebSocket, элементов, действий, плагинов, безопасности и тестирования; добавлены брендовые материалы. Документация будущих подсистем не означала их реализацию.
 
-    -   IP Address
-    -   Port
+**EN:** Created the project, initial architecture and documentation for technology, API, WebSocket, elements, actions, plugins, security and testing; added branding assets. Documentation of future subsystems did not imply implementation.
 
--   Добавлены кнопки:
+## Версии / Versioning
 
-    -   Start Server
-    -   Stop Server
+**RU:** MAJOR.MINOR.PATCH-stage (alpha, beta, release). Номер сборки берётся из `src/RadishDeck.Core/AppVersion.cs`; номер этапа разработки не меняет версию автоматически.
 
-## Verification / Проверка
-
--   dotnet build RadishDeck.sln успешно.
-
--   dotnet build RadishDeck.sln completed successfully.
-
--   Desktop управляет запуском Server.
-
--   Desktop controls Server lifecycle.
-
-------------------------------------------------------------------------
-
-# 0.1.3-alpha
-
-## Added / Добавлено
-
--   Added Core Element model.
--   Added Core Action model.
--   Added Core State model.
--   Centralized application version source.
--   Unified version format with development stage suffix.
-
-Создан базовый фундамент моделей ядра Radish Deck.
-
-Creation of the Radish Deck Core model foundation.
-
-## Verification / Проверка
-
--   `dotnet build RadishDeck.sln` успешно.
--   Core не содержит ссылок на Desktop, Server, Infrastructure или сторонние библиотеки.
-
-------------------------------------------------------------------------
-
-# 0.1.4-alpha
-
-## Added / Добавлено
-
--   First Element execution pipeline.
--   Action execution mechanism.
--   Desktop dashboard prototype.
-
-------------------------------------------------------------------------
-
-# 0.1.5-alpha
-
-## Changed / Изменено
-
-- Server поставляется вместе с Desktop в `publish/server` и запускается как отдельный процесс без исходников и `dotnet run`.
-- Добавлено согласованное состояние жизненного цикла Server: Stopped, Starting, Running, Stopping, Error.
-- IP и Port фиксируются снимком до запуска и блокируются до полной остановки.
-- stdout/stderr Server читаются асинхронно с ограниченным диагностическим буфером.
-- `/status` проверяется по name, version, status и PID дочернего процесса.
-- Обрабатываются неожиданный exit, отмена запуска, занятый порт и диагностические сообщения.
-- Добавлены интеграционные проверки жизненного цикла.
-
-## Verification / Проверка
-
-- `dotnet build RadishDeck.sln -c Release` — 0 ошибок, 0 предупреждений.
-- 20/20 lifecycle checks passed.
-------------------------------------------------------------------------
-
-# Versioning
-
-Формат версии:
-
-MAJOR.MINOR.PATCH-stage (alpha, beta или release)
-
-Alpha версии используются для ранней разработки и проверки архитектуры.
-
-Alpha versions are used for early development and architecture
-validation.
-
-
-------------------------------------------------------------------------
-
-# 0.2.0-alpha
-
-## Added / Добавлено
-
-- First usable Deck Editor WPF layout with Pages, workspace grid and properties panel.
-- Added Core `Deck`, `Page` and extended `Element` domain models.
-- Added `ActionDefinition`, `ActionRegistry` and `ActionDispatcher`.
-- Added JSON persistence with a versioned `deck.v1.json` local store and default Deck.
-- Added registered `server.start`, `server.stop` and safe `url.open` actions.
-- Added Button element creation, selection, deletion, name/action/position editing.
-- Preserved the 0.1.5 Server lifecycle and bottom server control panel.
-
-## Deferred / Отложено
-
-- Full Plugin System, AI, Web/Tablet clients, SQLite, Profiles, arbitrary shell execution and advanced drag-and-drop remain planned.
-
-------------------------------------------------------------------------
-
-# 0.2.1-alpha
-
-## Added
-
-- Added `process.start` action.
-- Added `ProcessStartActionExecutor`.
-
-## Changed
-
-- Added first real executable action.
-
-## Deferred
-
-- Server execution pipeline.
-- Web client.
-- Mobile client.
-
-------------------------------------------------------------------------
-
-# 0.2.2-alpha
-
-## Added
-
-- Server Deck read API.
-- `GET /deck` endpoint.
-
-## Changed
-
-- Server can read Deck data from the existing `deck.v1.json` store.
-
-## Deferred
-
-- `PUT /deck`.
-- Desktop Server synchronization.
-- Web client.
-- 0.3.1-alpha
-  - Added persistent local ServerSettings (IP, port and name) in `server.settings.json`.
-  - Added lifecycle Restart without changing the Action System or Deck format.
-
-## Documentation alignment — Vision v3
-
-- Aligned UI, elements, roadmap and technology documentation with Vision v3, Architecture v3 and Designer Specification.
-- Clarified Canvas/device profiles, shared rendering, optional action bindings, and the distinction between planned features and historical implementation notes.
+**EN:** MAJOR.MINOR.PATCH-stage (alpha, beta, release). The assembly version comes from `src/RadishDeck.Core/AppVersion.cs`; a development stage does not automatically change the version.
