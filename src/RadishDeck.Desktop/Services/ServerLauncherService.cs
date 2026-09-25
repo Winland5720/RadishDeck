@@ -19,6 +19,7 @@ public sealed class ServerLauncherService : IAsyncDisposable
     private Task<State>? _stopTask;
     private bool _disposed;
     private ServerLifecycleSnapshot _snapshot = new(ServerLifecycle.Stopped, "", null, null, false);
+    private ServerConfiguration? _lastConfiguration;
 
     public ServerLauncherService(string? executablePath = null, TimeSpan? startupTimeout = null)
     {
@@ -39,6 +40,7 @@ public sealed class ServerLauncherService : IAsyncDisposable
             // Reject overlapping starts instead of queuing a surprise restart after Stop.
             if (!_snapshot.CanEditConfiguration) return Task.FromResult(CurrentState());
             _diagnostics = new ServerDiagnostics();
+            _lastConfiguration = configuration;
             _startupCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _startupCancellation.CancelAfter(_startupTimeout);
             _snapshot = new(ServerLifecycle.Starting, "Starting server", configuration, null, false);
@@ -57,6 +59,17 @@ public sealed class ServerLauncherService : IAsyncDisposable
             _stopTask = StopCoreAsync(_operation.WaitAsync());
             return _stopTask;
         }
+    }
+
+    public async Task<State> RestartAsync(CancellationToken cancellationToken = default)
+    {
+        var configuration = Snapshot.Configuration ?? _lastConfiguration;
+        if (configuration is null)
+            return new State { Status = "Error", Message = "Server configuration is missing" };
+
+        var stopped = await StopAsync().ConfigureAwait(false);
+        if (stopped.Status != ServerLifecycle.Stopped.ToString()) return stopped;
+        return await StartAsync(configuration, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<State> StartCoreAsync(ServerConfiguration configuration, CancellationTokenSource cancellation, Task admission)

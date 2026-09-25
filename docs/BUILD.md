@@ -1,3 +1,5 @@
+> Команды и исторические разделы ниже относятся к указанным этапам разработки. Целевая архитектура определяется Architecture v3 и Designer Specification. SQLite, WebSocket, плагины и Splash Screen не являются условиями запуска текущего прототипа.
+
 # RADISH DECK
 
 # BUILD DOCUMENTATION
@@ -199,3 +201,10 @@ dotnet run --project tests/RadishDeck.Lifecycle.Tests -c Release --no-build -- `
 ## 0.2.0-alpha Deck verification
 
 The lifecycle test executable also runs the Deck acceptance checks. It verifies registry lookup and duplicate handling, dispatcher routing, unknown/failing actions, Page/Element editing rules, 3x3 collision checks, versioned JSON roundtrip, malformed-file preservation, concurrent saves, legacy migration and URL validation.
+
+## 0.3.1-alpha Server settings
+
+Desktop сохраняет IP, порт и имя локального Server в
+`%LOCALAPPDATA%/RadishDeck/server.settings.json`. Файл записывается атомарно;
+повреждённый файл не заменяется автоматически. Restart останавливает текущий
+процесс и запускает его снова через существующий `ServerLauncherService`.

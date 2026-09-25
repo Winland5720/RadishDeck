@@ -193,3 +193,7 @@ Improve interface later.
 Do not create complex design before validating system functionality.
 
 
+
+## Приоритет документации
+
+VISION.md v3, ARCHITECTURE.md v3 и DESIGNER_SPEC.md — источники истины для целевого приложения. Остальные документы должны соответствовать им. Исторические записи и текущий прототип не ограничивают целевую модель. Обновление документации само по себе не разрешает расширять объём конкретной задачи.

@@ -245,3 +245,11 @@ validation.
 - `PUT /deck`.
 - Desktop Server synchronization.
 - Web client.
+- 0.3.1-alpha
+  - Added persistent local ServerSettings (IP, port and name) in `server.settings.json`.
+  - Added lifecycle Restart without changing the Action System or Deck format.
+
+## Documentation alignment — Vision v3
+
+- Aligned UI, elements, roadmap and technology documentation with Vision v3, Architecture v3 and Designer Specification.
+- Clarified Canvas/device profiles, shared rendering, optional action bindings, and the distinction between planned features and historical implementation notes.

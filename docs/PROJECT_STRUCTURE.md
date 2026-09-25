@@ -1,3 +1,5 @@
+> Структура согласуется с Architecture v3: Desktop Designer создаёт проект, Core содержит модель Deck, единый Renderer обслуживает Desktop Preview и Web Runtime, Server выполняет действия. Упоминания SQLite и Plugin loading ниже обозначают будущие подсистемы.
+
 # RADISH DECK
 
 # PROJECT STRUCTURE

@@ -1,62 +1,27 @@
-# RADISH DECK
+# RadishDeck Technology Stack
 
-# TECHNOLOGY STACK
+Целевая архитектура: [Architecture v3](ARCHITECTURE.md).
 
-Версия:
-Alpha 0.2.0
+## Реализованная основа
 
----
+- C# / .NET 8.
+- WPF — оболочка Windows Desktop Designer.
+- ASP.NET Core — отдельный процесс Server.
+- Core — общие модели и контракты без зависимости от UI.
+- JSON — текущее хранение Deck и локальных настроек Server.
 
-# Основной язык разработки
+## Целевое отображение
 
-C#
+Общий Renderer используется в Desktop Preview и Web Runtime.
+План интеграции HTML Renderer в Desktop предусматривает WebView2.
+WPF-оболочка не должна становиться вторым независимым Renderer элементов.
 
-Платформа:
-.NET 8+
+## Будущие подсистемы
 
----
+REST API развивается для взаимодействия клиентов с Server.
+WebSocket, SQLite и плагины описывают будущие возможности и не являются
+обязательными зависимостями текущего прототипа. Их внедрение требует
+отдельного этапа и не меняет распределение ролей:
 
-# Основной стек
-
-- C# / .NET
-- Desktop UI (WPF или Avalonia)
-- ASP.NET Core Server
-- SQLite Database
-- REST API
-- WebSocket
-
----
-
-# Цель выбора
-
-Radish Deck является Windows-приложением,
-которое работает с системными функциями.
-
-Стек должен обеспечивать:
-
-- стабильный EXE;
-- работу с Windows API;
-- расширяемость;
-- поддержку плагинов;
-- удобную разработку.
-
----
-
-# Архитектура
-
-RadishDeck.exe
-
-↓
-
-Core + Server + UI + Database + Plugins
-
-↓
-
-API / WebSocket
-
-↓
-
-Radish Deck Client
-
-
-
+Desktop создаёт → Deck → Renderer → Desktop Preview / Web Runtime.
+Web вызывает действия → Server → Action System → Executor.

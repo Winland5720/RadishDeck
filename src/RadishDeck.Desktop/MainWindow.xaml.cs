@@ -16,9 +16,11 @@ public partial class MainWindow : Window
 {
     private readonly ServerLauncherService _server = new();
     private readonly DeckJsonStore _store = new();
+    private readonly ServerSettingsStore _settingsStore = new();
     private readonly ActionRegistry _registry;
     private readonly ActionDispatcher _dispatcher;
     private Deck _deck = new();
+    private ServerSettings _serverSettings = ServerSettings.Defaults;
     private DeckPage? _page;
     private Element? _selected;
     private bool _loaded;
@@ -43,6 +45,21 @@ public partial class MainWindow : Window
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        string? settingsError = null;
+        try
+        {
+            var settings = await _settingsStore.LoadAsync();
+            _serverSettings = settings;
+            IpAddressTextBox.Text = settings.IpAddress;
+            PortTextBox.Text = settings.Port.ToString();
+        }
+        catch (Exception exception)
+        {
+            // Server settings are optional for Deck editing. Keep defaults and continue loading the Deck.
+            settingsError = "Settings Error: " + exception.Message;
+            SaveStatusText.Text = settingsError;
+        }
+
         try
         {
             _deck = await _store.LoadAsync();
@@ -50,7 +67,9 @@ public partial class MainWindow : Window
             BindPages();
             SelectPage(_deck.Pages[0]);
             EditorPanel.IsEnabled = !_closing;
-            SaveStatusText.Text = "Deck loaded: " + _store.FilePath;
+            SaveStatusText.Text = settingsError is null
+                ? "Deck loaded: " + _store.FilePath
+                : settingsError + " Deck loaded: " + _store.FilePath;
         }
         catch (Exception exception)
         {
@@ -285,14 +304,44 @@ public partial class MainWindow : Window
         var editable = state.CanEditConfiguration && !_closing;
         IpAddressTextBox.IsEnabled = PortTextBox.IsEnabled = editable;
         StartServerButton.IsEnabled = editable;
+        RestartServerButton.IsEnabled = !_closing && state.Status is ServerLifecycle.Running or ServerLifecycle.Error && state.Configuration is not null;
         StopServerButton.IsEnabled = !_closing && state.CanStop;
     }
 
-    private async void StartServerButton_OnClick(object sender, RoutedEventArgs e) =>
+    private async void StartServerButton_OnClick(object sender, RoutedEventArgs e)
+    {
         await ExecuteAsync(new Element(), "server.start");
+        if (_server.Snapshot.Status == ServerLifecycle.Running)
+            await SaveServerSettingsAsync();
+    }
+
+    private async void RestartServerButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_closing) return;
+        ActionResultText.Text = "Action server.restart: executing";
+        var result = await _server.RestartAsync();
+        ActionResultText.Text = $"Action server.restart: {result.Status} — {result.Message}";
+        if (result.Status == ServerLifecycle.Running.ToString()) await SaveServerSettingsAsync();
+    }
 
     private async void StopServerButton_OnClick(object sender, RoutedEventArgs e) =>
         await ExecuteAsync(new Element(), "server.stop");
+
+    private async Task SaveServerSettingsAsync()
+    {
+        try
+        {
+            var configuration = _server.Snapshot.Configuration;
+            if (configuration is null) return;
+            await _settingsStore.SaveAsync(new ServerSettings
+            {
+                IpAddress = configuration.IpAddress,
+                Port = configuration.Port,
+                Name = _serverSettings.Name
+            });
+        }
+        catch (Exception exception) { SaveStatusText.Text = "Settings Error: " + exception.Message; }
+    }
 
     private void ActionsTab_Click(object sender, RoutedEventArgs e) =>
         MessageBox.Show(this, string.Join(Environment.NewLine, _registry.Definitions.Select(a => $"{a.Id} — {a.Name}")), "Action Registry");

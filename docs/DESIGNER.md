@@ -1,10 +1,8 @@
 # Designer
 
-Конструктор интерфейсов:
-Canvas
-Element Library
-Properties Panel
-Action Binding
+Полный контракт: [Designer Specification](DESIGNER_SPEC.md).
 
-Элемент:
-Appearance + Layout + Action + State
+Desktop — WYSIWYG-конструктор: Elements Library, Canvas, Properties,
+Device Profiles, Edit Mode и Preview Mode.
+Element: Layout + Content + Appearance + Behavior + Action.
+Desktop Preview и Web Runtime используют один Renderer.

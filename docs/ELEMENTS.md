@@ -10,62 +10,26 @@ Alpha 0.1.0
 
 # 1. Назначение
 
-Element System --- система компонентов интерфейса Radish Deck.
-
-Элемент --- это объект интерфейса, который имеет:
-
--   внешний вид;
--   состояние;
--   свойства;
--   действие.
-
-Основная модель:
-
-Element
-
--   
-
-State
-
--   
-
-Action
-
--   
-
-Properties
-
-------------------------------------------------------------------------
+Element — универсальный визуальный объект панели управления.
+Целевой контракт определяется Vision v3, Architecture v3 и Designer Specification.
+Этот документ описывает развитие системы, а не текущую схему deck.v1.json.
 
 # 2. Общая структура элемента
 
-Каждый элемент должен иметь:
-
     Element
+    ├── Id / Type / Name
+    ├── Layout       (Position, Width, Height, Layer)
+    ├── Content      (Text, Image, Icon)
+    ├── Appearance   (Background, Border, Radius, Shadow, Opacity)
+    ├── Behavior     (Animation, States)
+    └── Action       (привязка при необходимости)
 
-    |
-
-    ├── ID
-
-    ├── Type
-
-    ├── Name
-
-    ├── Properties
-
-    ├── Layout
-
-    ├── State
-
-    ├── Action
-
-    └── Style
-
-------------------------------------------------------------------------
-
+Действие не обязательно для декоративного элемента. Состояния относятся
+к Behavior, визуальные настройки — к Appearance. Отдельный обязательный
+верхнеуровневый Style не является целевым контрактом.
 # 3. Типы элементов
 
-В Alpha реализуются базовые элементы.
+Базовые элементы Designer: Button, Text, Image, Container. Vision также предусматривает Logo и Widget. Indicator, Slider и Toggle остаются будущими расширениями.
 
 ## Button
 
@@ -244,34 +208,14 @@ Server:
 
 # 9. Layout
 
-Каждый элемент имеет позицию.
+Элемент располагается на Canvas. Layout описывает Position X/Y, Width,
+Height и Layer. Canvas задаёт размеры, ориентацию, фон и ресурсы.
+Device Profiles определяют правила отображения для Desktop, Tablet,
+Mobile и Custom. Сетка — инструмент редактирования, а не ограничение модели.
 
-Используется Grid.
-
-Поля:
-
-    grid_x
-
-    grid_y
-
-    grid_width
-
-    grid_height
-
-Пример:
-
-``` json
-{
-"type":"button",
-"grid_x":0,
-"grid_y":0,
-"grid_width":2,
-"grid_height":1
-}
-```
-
-------------------------------------------------------------------------
-
+Существующие GridX/GridY/GridWidth/GridHeight относятся к текущему
+прототипу deck.v1. Переход к целевой модели требует отдельного решения
+о совместимости; этот документ не меняет формат хранения.
 # 10. State System
 
 Каждый элемент может иметь состояние.
@@ -279,7 +223,10 @@ Server:
 Button:
 
     Normal
-
+    Hover
+    Running
+    Success
+    Error
     Pressed
 
     Disabled
@@ -368,7 +315,7 @@ Alpha:
 
 # 14. Renderer
 
-Renderer отвечает за отображение.
+Один Renderer отвечает за Desktop Preview и Web Runtime. При одинаковом профиле устройства результат должен совпадать.
 
 Element не знает:
 

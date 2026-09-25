@@ -1,3 +1,5 @@
+> План расширений по Vision v3 и Designer Specification (этап 0.6). Это не описание реализованного Plugin Manager. Плагины используют общие Element System, Action System и Renderer.
+
 # RADISH DECK
 
 # PLUGIN SYSTEM

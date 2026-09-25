@@ -35,6 +35,7 @@
                 <WrapPanel>
                     <TextBlock Text="SERVER" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,16,0"/>
                     <Button x:Name="StartServerButton" Content="▶ Запустить сервер" Background="#087A42" Click="StartServerButton_OnClick"/>
+                    <Button x:Name="RestartServerButton" Content="🔄 Перезапустить сервер" Click="RestartServerButton_OnClick"/>
                     <Button x:Name="StopServerButton" Content="■ Остановить сервер" Click="StopServerButton_OnClick"/>
                     <TextBlock Text="IP" Margin="8"/><TextBox x:Name="IpAddressTextBox" Text="127.0.0.1" Width="130"/>
                     <TextBlock Text="Port" Margin="8"/><TextBox x:Name="PortTextBox" Text="5187" Width="70"/>
