@@ -1,383 +1,154 @@
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using RadishDeck.Core;
-using RadishDeck.Core.Actions;
+using Microsoft.Web.WebView2.Core;
 using RadishDeck.Core.Models;
+using RadishDeck.Core.Models.V2;
 using RadishDeck.Core.Rendering;
 using RadishDeck.Desktop.Services;
-using RadishDeck.Desktop.Rendering;
 using RadishDeck.Infrastructure;
-using CoreAction = RadishDeck.Core.Models.Action;
-using DeckPage = RadishDeck.Core.Models.Page;
 
 namespace RadishDeck.Desktop;
-
 public partial class MainWindow : Window
 {
-    private readonly ServerLauncherService _server = new();
     private readonly DeckJsonStore _store = new();
+    private readonly ServerLauncherService _server = new();
     private readonly ServerSettingsStore _settingsStore = new();
-    private readonly ActionRegistry _registry;
-    private readonly ActionDispatcher _dispatcher;
-    private readonly WpfCanvasRenderer _renderer = new();
+    private ServerSettings _settings = ServerSettings.Defaults;
     private Deck _deck = new();
-    private ServerSettings _serverSettings = ServerSettings.Defaults;
-    private DeckPage? _page;
-    private Element? _selected;
-    private bool _loaded;
-    private bool _closing;
-    private bool _canClose;
-    private long _actionSequence;
-    private long _saveSequence;
-    private readonly HashSet<Guid> _executing = new();
-
+    private Page? _page;
+    private Guid? _selected;
+    private bool _ready, _closing, _canClose;
+    private string? _error;
+    private readonly CanvasProfile _canvas = new() { Name = "Desktop", Width = 1920, Height = 1080, Resolution = "1920x1080" };
     public MainWindow()
     {
         InitializeComponent();
-        _registry = DesktopActions.Create(_server, () =>
-            ServerConfiguration.Create(IpAddressTextBox.Text, PortTextBox.Text));
-        _dispatcher = new ActionDispatcher(_registry);
-        ActionComboBox.ItemsSource = _registry.Definitions;
-        _server.StateChanged += OnServerStateChanged;
+        Loaded += async (_, _) => await InitializeAsync();
         Closing += OnClosing;
-        Loaded += OnLoaded;
-        RenderServer();
+        _server.StateChanged += ServerChanged;
     }
-
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async Task InitializeAsync()
     {
-        string? settingsError = null;
-        try
-        {
-            var settings = await _settingsStore.LoadAsync();
-            _serverSettings = settings;
-            IpAddressTextBox.Text = settings.IpAddress;
-            PortTextBox.Text = settings.Port.ToString();
-        }
-        catch (Exception exception)
-        {
-            // Server settings are optional for Deck editing. Keep defaults and continue loading the Deck.
-            settingsError = "Settings Error: " + exception.Message;
-            SaveStatusText.Text = settingsError;
-        }
-
+        try { _settings = await _settingsStore.LoadAsync(); }
+        catch (Exception ex) { _error = ex.Message; }
         try
         {
             _deck = await _store.LoadAsync();
-            _loaded = true;
-            BindPages();
-            SelectPage(_deck.Pages[0]);
-            EditorPanel.IsEnabled = !_closing;
-            SaveStatusText.Text = settingsError is null
-                ? "Deck loaded: " + _store.FilePath
-                : settingsError + " Deck loaded: " + _store.FilePath;
+            _page = _deck.Pages[0];
+            foreach (var element in _deck.Pages.SelectMany(p => p.Elements))
+            {
+                element.Layout ??= new ElementLayout { X = element.GridX * 100 + 20, Y = element.GridY * 80 + 20, Width = element.GridWidth * 100, Height = element.GridHeight * 60 };
+                element.Content ??= new ElementContent { Text = element.Name };
+            }
         }
-        catch (Exception exception)
-        {
-            // Keep the editor disabled and never save over an unreadable file, including on exit.
-            SaveStatusText.Text = exception.Message;
-        }
-    }
-
-    private void BindPages()
-    {
-        PagesList.ItemsSource = null;
-        PagesList.ItemsSource = _deck.Pages;
-        DeletePageButton.IsEnabled = _deck.Pages.Count > 1;
-    }
-
-    private void SelectPage(DeckPage page)
-    {
-        _page = page;
-        _selected = null;
-        CurrentPageText.Text = PageNameTextBox.Text = page.Name;
-        PagesList.SelectedItem = page;
-        RenderDeck();
-        RenderProperties();
-    }
-
-    private void PageSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PagesList.SelectedItem is DeckPage page && page != _page) SelectPage(page);
-    }
-
-    private void RenderDeck()
-    {
-        if (_page is null) return;
-        foreach (var element in _page.Elements)
-        {
-            element.Layout ??= new() { X = element.GridX * 100 + 20, Y = element.GridY * 80 + 20,
-                Width = element.GridWidth * 100, Height = element.GridHeight * 60 };
-            element.Content ??= new() { Text = element.Name };
-        }
-        var context = new WpfCanvasRenderContext(DeckGrid, id =>
-        {
-            _selected = _page.Elements.FirstOrDefault(e => e.Id == id);
-            RenderProperties();
-        }, (id, x, y) =>
-        {
-            var element = _page.Elements.FirstOrDefault(e => e.Id == id);
-            if (element?.Layout is not null) { element.Layout.X = x; element.Layout.Y = y; }
-            if (element == _selected) { XTextBox.Text = x.ToString("0.##"); YTextBox.Text = y.ToString("0.##"); }
-        });
-        _renderer.Render(_page.Elements.Select(RenderElement.From).ToArray(), context);
-    }
-
-    private void ElementClick(object sender, RoutedEventArgs e)
-    {
-        _selected = ((FrameworkElement)sender).Tag as Element;
-        RenderDeck();
-        RenderProperties();
-    }
-
-    private void RenderProperties()
-    {
-        PropertiesPanel.IsEnabled = _selected is not null && !_closing;
-        if (_selected is null) return;
-        ElementNameTextBox.Text = _selected.Name;
-        ActionComboBox.SelectedValue = _selected.ActionId;
-        UrlTextBox.Text = _selected.Url;
-        ProcessPathTextBox.Text = _selected.Url;
-        XTextBox.Text = (_selected.Layout?.X ?? _selected.GridX).ToString("0.##");
-        YTextBox.Text = (_selected.Layout?.Y ?? _selected.GridY).ToString("0.##");
-        WidthTextBox.Text = (_selected.Layout?.Width ?? _selected.GridWidth).ToString("0.##");
-        HeightTextBox.Text = (_selected.Layout?.Height ?? _selected.GridHeight).ToString("0.##");
-        ExecuteElementButton.IsEnabled = !_executing.Contains(_selected.Id);
-    }
-
-    private void ActionSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        var actionId = ActionComboBox.SelectedValue as string;
-        UrlPanel.Visibility = actionId == "url.open" ? Visibility.Visible : Visibility.Collapsed;
-        ProcessPathPanel.Visibility = actionId == "process.start" ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private bool ApplyProperties()
-    {
-        if (_page is null || _selected is null) return true;
+        catch (Exception ex) { _error = ex.Message; }
         try
         {
-            if (ActionComboBox.SelectedValue is not string id || !_registry.TryGet(id, out _, out _))
-                throw new ArgumentException("Select a registered action");
-            if (!double.TryParse(XTextBox.Text, out var x) || !double.TryParse(YTextBox.Text, out var y) ||
-                !double.TryParse(WidthTextBox.Text, out var width) || !double.TryParse(HeightTextBox.Text, out var height) ||
-                width <= 0 || height <= 0)
-                throw new ArgumentException("Position and size must be valid positive numbers");
-            var value = id == "process.start" ? ProcessPathTextBox.Text.Trim() : UrlTextBox.Text.Trim();
-            var gridX = Math.Clamp((int)Math.Round(x / 100) , 0, 2);
-            var gridY = Math.Clamp((int)Math.Round(y / 80), 0, 2);
-            var gridWidth = Math.Clamp((int)Math.Round(width / 100), 1, 3);
-            var gridHeight = Math.Clamp((int)Math.Round(height / 60), 1, 3);
-            DeckEditor.UpdateElement(_page, _selected, ElementNameTextBox.Text, id, value, gridX, gridY, gridWidth, gridHeight);
-            _selected.Layout = new() { X = x, Y = y, Width = width, Height = height, Layer = _selected.Layout?.Layer ?? 0 };
-            _selected.Content = new() { Text = ElementNameTextBox.Text };
-            RenderDeck();
-            return true;
+            var path = Path.Combine(AppContext.BaseDirectory, "Web", "index.html");
+            if (!File.Exists(path)) throw new FileNotFoundException("Local Web UI not found", path);
+            var environment = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RadishDeck", "WebView2"));
+            await WebView.EnsureCoreWebView2Async(environment);
+            // RadishDeck is a desktop host; do not expose the embedded browser's
+            // Back/Reload/Save/Inspect context menu to end users.
+            WebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            WebView.CoreWebView2.SetVirtualHostNameToFolderMapping("radishdeck.local", Path.GetDirectoryName(path)!, CoreWebView2HostResourceAccessKind.DenyCors);
+            WebView.CoreWebView2.NavigationStarting += (_, e) => { if (e.Uri != "https://radishdeck.local/index.html") e.Cancel = true; };
+            WebView.CoreWebView2.NewWindowRequested += (_, e) => e.Handled = true;
+            WebView.WebMessageReceived += OnMessage;
+            WebView.CoreWebView2.Navigate("https://radishdeck.local/index.html");
         }
-        catch (Exception exception)
-        {
-            ActionResultText.Text = "Edit Error: " + exception.Message;
-            return false;
-        }
+        catch (Exception ex) { MessageBox.Show(this, "WebView2 initialization failed: " + ex.Message, "RadishDeck"); }
     }
-
-    private async void ApplyElement_Click(object sender, RoutedEventArgs e)
+    private async void OnMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
-        if (ApplyProperties()) await SaveAsync();
-    }
-
-    private async void AddPage_Click(object sender, RoutedEventArgs e)
-    {
-        var page = DeckEditor.AddPage(_deck);
-        BindPages();
-        SelectPage(page);
-        await SaveAsync();
-    }
-
-    private async void RenamePage_Click(object sender, RoutedEventArgs e)
-    {
-        if (_page is null) return;
+        if (_closing || e.Source != "https://radishdeck.local/index.html") return;
         try
         {
-            DeckEditor.RenamePage(_page, PageNameTextBox.Text);
-            BindPages();
-            PagesList.SelectedItem = _page;
-            CurrentPageText.Text = _page.Name;
-            await SaveAsync();
+            var message = JsonSerializer.Deserialize<BridgeMessage>(e.WebMessageAsJson, WebBridge.Json) ?? throw new ArgumentException("Empty message");
+            switch (message.Type)
+            {
+                case "ready": _ready = true; SendServer(); SendElements(); if (_error != null) SendError(_error); break;
+                case "navigation": break;
+                case "server.getState": SendServer(); break;
+                case "server.start":
+                    if (!_server.Snapshot.CanEditConfiguration) throw new InvalidOperationException("Stop the server before changing configuration");
+                    var request = message.Payload.Deserialize<ServerStartRequest>(WebBridge.Json) ?? throw new ArgumentException("Missing configuration");
+                    var configuration = ServerConfiguration.Create(request.IpAddress, request.Port);
+                    await _server.StartAsync(configuration);
+                    if (_server.Snapshot.Status == ServerLifecycle.Running)
+                    {
+                        _settings.IpAddress = configuration.IpAddress; _settings.Port = configuration.Port;
+                        await _settingsStore.SaveAsync(_settings);
+                    }
+                    SendServer(); break;
+                case "server.stop": await _server.StopAsync(); SendServer(); break;
+                case "server.restart": await _server.RestartAsync(); SendServer(); break;
+                case "server.openWebRuntime": Process.Start(new ProcessStartInfo(AccessUrl()) { UseShellExecute = true }); break;
+                case "server.copyUrl": Clipboard.SetText(AccessUrl()); break;
+                case "designer.render": SendElements(); break;
+                case "designer.selectElement":
+                    var id = message.Payload.GetProperty("id").GetGuid();
+                    _selected = _page?.Elements.FirstOrDefault(x => x.Id == id)?.Id; break;
+                case "designer.addElement":
+                    if (_page is null) throw new InvalidOperationException("Deck unavailable");
+                    var added = DeckEditor.AddButton(_page);
+                    added.Layout = new ElementLayout { X = 80 + added.GridX * 200, Y = 80 + added.GridY * 100, Width = 180, Height = 64 };
+                    added.Content = new ElementContent { Text = added.Name }; _selected = added.Id;
+                    await _store.SaveAsync(_deck); SendElements(); break;
+                case "designer.elementChanged":
+                    var move = message.Payload.Deserialize<ElementMove>(WebBridge.Json) ?? throw new ArgumentException("Missing coordinates");
+                    var element = _page?.Elements.FirstOrDefault(x => x.Id == move.Id) ?? throw new ArgumentException("Unknown element");
+                    var layout = element.Layout!;
+                    (layout.X, layout.Y) = WebBridge.Clamp(move.X, move.Y, layout, _canvas);
+                    _selected = element.Id;
+                    await _store.SaveAsync(_deck); SendElements();
+                    Send("designer.saved", new { id = element.Id, x = layout.X, y = layout.Y }); break;
+                default: SendError("Unknown message: " + message.Type); break;
+            }
         }
-        catch (Exception exception) { ActionResultText.Text = "Edit Error: " + exception.Message; }
+        catch (Exception ex) { SendError(ex.Message); }
     }
-
-    private async void DeletePage_Click(object sender, RoutedEventArgs e)
-    {
-        if (_page is null) return;
-        try
-        {
-            DeckEditor.DeletePage(_deck, _page);
-            BindPages();
-            SelectPage(_deck.Pages[0]);
-            await SaveAsync();
-        }
-        catch (Exception exception) { ActionResultText.Text = "Edit Error: " + exception.Message; }
-    }
-
-    private async void AddElement_Click(object sender, RoutedEventArgs e)
-    {
-        if (_page is null) return;
-        try
-        {
-            _selected = DeckEditor.AddButton(_page);
-            RenderDeck();
-            RenderProperties();
-            await SaveAsync();
-        }
-        catch (Exception exception) { ActionResultText.Text = "Edit Error: " + exception.Message; }
-    }
-
-    private async void DeleteElement_Click(object sender, RoutedEventArgs e)
-    {
-        if (_page is null || _selected is null) return;
-        _page.Elements.Remove(_selected);
-        _selected = null;
-        RenderDeck();
-        RenderProperties();
-        await SaveAsync();
-    }
-
-    private async Task<bool> SaveAsync()
-    {
-        if (!_loaded) return true;
-        var sequence = ++_saveSequence;
-        try
-        {
-            await _store.SaveAsync(_deck);
-            if (sequence == _saveSequence) SaveStatusText.Text = "Saved: " + _store.FilePath;
-            return true;
-        }
-        catch (Exception exception)
-        {
-            if (sequence == _saveSequence) SaveStatusText.Text = "Save Error: " + exception.Message;
-            return false;
-        }
-    }
-
-    private async Task ExecuteAsync(Element element, string actionId)
-    {
-        if (_closing || !_executing.Add(element.Id)) return;
-        var sequence = ++_actionSequence;
-        ActionResultText.Text = $"Action {actionId}: executing";
-        try
-        {
-            // Both bottom controls and Deck use the same dispatcher and the same server service.
-            var execution = _dispatcher.ExecuteAsync(element, new CoreAction { Type = actionId });
-            RenderServer();
-            var result = await execution;
-            if (sequence == _actionSequence)
-                ActionResultText.Text = $"Action {actionId}: {result.Status} — {result.Message}";
-        }
-        finally
-        {
-            _executing.Remove(element.Id);
-            RenderServer();
-            ExecuteElementButton.IsEnabled = _selected is not null && !_executing.Contains(_selected.Id) && !_closing;
-        }
-    }
-
-    private async void ExecuteElement_Click(object sender, RoutedEventArgs e)
-    {
-        if (_selected is null || !ApplyProperties()) return;
-        var element = _selected;
-        ExecuteElementButton.IsEnabled = false;
-        await SaveAsync();
-        await ExecuteAsync(element, element.ActionId);
-    }
-
-    private void OnServerStateChanged()
-    {
-        if (!Dispatcher.HasShutdownStarted) Dispatcher.BeginInvoke(new System.Action(RenderServer));
-    }
-
-    private void RenderServer()
+    private string AccessUrl()
     {
         var state = _server.Snapshot;
-        ServerStatusText.Text = state.Status.ToString();
-        ServerMessageText.Text = state.Message;
-        ServerVersionText.Text = state.Version ?? AppVersion.Current;
-        DiagnosticsText.Text = _server.Diagnostics;
-        var editable = state.CanEditConfiguration && !_closing;
-        IpAddressTextBox.IsEnabled = PortTextBox.IsEnabled = editable;
-        StartServerButton.IsEnabled = editable;
-        RestartServerButton.IsEnabled = !_closing && state.Status is ServerLifecycle.Running or ServerLifecycle.Error && state.Configuration is not null;
-        StopServerButton.IsEnabled = !_closing && state.CanStop;
+        if (state.Status != ServerLifecycle.Running || state.Configuration is null) throw new InvalidOperationException("Server is not running");
+        return state.Configuration.Address.AbsoluteUri;
     }
-
-    private async void StartServerButton_OnClick(object sender, RoutedEventArgs e)
+    private void SendElements() => Send("renderElements", new { canvas = _canvas, elements = _page?.Elements.Select(RenderElement.From).ToArray() ?? [], selectedId = _selected, pageName = _page?.Name, available = _page != null });
+    private void ServerChanged() { if (!Dispatcher.HasShutdownStarted) Dispatcher.BeginInvoke(new System.Action(SendServer)); }
+    private void SendServer()
     {
-        await ExecuteAsync(new Element(), "server.start");
-        if (_server.Snapshot.Status == ServerLifecycle.Running)
-            await SaveServerSettingsAsync();
+        var state = _server.Snapshot;
+        var addresses = NetworkInterface.GetAllNetworkInterfaces()
+            .Where(n => n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+            .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+            .Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork && !a.Address.ToString().StartsWith("169.254."))
+            .Select(a => a.Address.ToString()).Append("127.0.0.1").Append(_settings.IpAddress).Distinct().ToArray();
+        Send("server.state", new { status = state.Status.ToString(), state.Message, diagnostics = _server.Diagnostics,
+            canEdit = state.CanEditConfiguration, canStop = state.CanStop,
+            canRestart = state.Configuration != null && state.Status is ServerLifecycle.Running or ServerLifecycle.Error,
+            ipAddress = state.Configuration?.IpAddress ?? _settings.IpAddress, port = state.Configuration?.Port ?? _settings.Port,
+            accessUrl = state.Status == ServerLifecycle.Running ? state.Configuration?.Address.AbsoluteUri : null, addresses });
     }
-
-    private async void RestartServerButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (_closing) return;
-        ActionResultText.Text = "Action server.restart: executing";
-        var result = await _server.RestartAsync();
-        ActionResultText.Text = $"Action server.restart: {result.Status} — {result.Message}";
-        if (result.Status == ServerLifecycle.Running.ToString()) await SaveServerSettingsAsync();
-    }
-
-    private async void StopServerButton_OnClick(object sender, RoutedEventArgs e) =>
-        await ExecuteAsync(new Element(), "server.stop");
-
-    private async Task SaveServerSettingsAsync()
-    {
-        try
-        {
-            var configuration = _server.Snapshot.Configuration;
-            if (configuration is null) return;
-            await _settingsStore.SaveAsync(new ServerSettings
-            {
-                IpAddress = configuration.IpAddress,
-                Port = configuration.Port,
-                Name = _serverSettings.Name
-            });
-        }
-        catch (Exception exception) { SaveStatusText.Text = "Settings Error: " + exception.Message; }
-    }
-
-    private void ActionsTab_Click(object sender, RoutedEventArgs e) =>
-        MessageBox.Show(this, string.Join(Environment.NewLine, _registry.Definitions.Select(a => $"{a.Id} — {a.Name}")), "Action Registry");
-
+    private void Send(string type, object payload) { if (_ready) WebView.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new { type, payload }, WebBridge.Json)); }
+    private void SendError(string message) => Send("error", new { message });
     private async void OnClosing(object? sender, CancelEventArgs e)
     {
         if (_canClose) return;
-        e.Cancel = true;
-        if (_closing) return;
-        _closing = true;
-        EditorPanel.IsEnabled = false;
-        RenderServer();
+        e.Cancel = true; if (_closing) return; _closing = true;
         try
         {
             await _server.StopAsync();
-            if (_server.Snapshot.OwnsProcess) return;
-            if (_loaded && (!ApplyProperties() || !await SaveAsync())) return;
-            _server.StateChanged -= OnServerStateChanged;
-            await _server.DisposeAsync();
-            _canClose = true;
-            Close();
+            if (_server.Snapshot.OwnsProcess) throw new InvalidOperationException(_server.Snapshot.Message);
+            if (_page != null) await _store.SaveAsync(_deck);
+            _server.StateChanged -= ServerChanged; await _server.DisposeAsync();
+            _canClose = true; _ready = false; WebView.Dispose(); Close();
         }
-        catch (Exception exception) { SaveStatusText.Text = "Close Error: " + exception.Message; }
-        finally
-        {
-            if (!_canClose)
-            {
-                _closing = false;
-                EditorPanel.IsEnabled = _loaded;
-                RenderServer();
-            }
-        }
+        catch (Exception ex) { _closing = false; MessageBox.Show(this, ex.Message, "RadishDeck"); }
     }
 }

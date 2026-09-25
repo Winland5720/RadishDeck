@@ -226,3 +226,7 @@ Element
 - старый `deck.v1.json` загружается и сохраняется по выбранной политике;
 - тесты миграции, рендеринга и обратной совместимости проходят;
 - документация и changelog обновлены.
+
+## Stage 5 completion
+
+Stage 5 is complete: the Desktop WebView2 shell, local Web UI assets, navigation, structured C#↔JavaScript bridge, Canvas/Button Designer foundation, server lifecycle controls, persistence round trip and host-level context-menu suppression are implemented and manually validated. Resize, full Properties/Pages/Layers, multi-selection, undo/redo, widgets, QR pairing, production shared rendering and full Logs/Clients/Settings remain future work.

@@ -1,0 +1,1 @@
+window.radishBridge={send(message){if(window.chrome&&chrome.webview)chrome.webview.postMessage(message);},onMessage(handler){window._radishMessage=handler;}};window.chrome?.webview?.addEventListener('message',e=>{try{window._radishMessage?.(typeof e.data==='string'?JSON.parse(e.data):e.data);}catch(error){console.error(error);}});

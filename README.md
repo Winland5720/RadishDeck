@@ -416,3 +416,15 @@ Stage 4 добавляет первый ощутимый Designer Preview: Deskt
 Element V2 Button на Canvas в координатах X/Y, позволяет выбрать элемент,
 перетащить его мышью и изменить координаты в панели свойств. Это MVP WPF
 адаптера Renderer Contract; Web Runtime и формат Deck остаются прежними.
+
+## Current Stage 5 status
+
+The Desktop application now uses WPF as its host and WebView2 for the local RadishDeck UI. Local assets are under `src/RadishDeck.Desktop/Web`; the shell includes Главная, Редактор, Логи, Клиенты and Настройки. The Designer prototype uses a logical 1920×1080 Canvas, Button selection and drag, clamping, a structured C#↔JavaScript bridge and JSON persistence. Server Start/Stop/Restart, bind-address selection, port validation, actual URL, copy/open controls remain available in the shell. The browser Web Runtime is a separate Server-served surface.
+
+Run the Desktop shell with:
+
+```powershell
+dotnet run --project src/RadishDeck.Desktop/RadishDeck.Desktop.csproj
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the current host/bridge model and [docs/DESIGNER.md](docs/DESIGNER.md) for the Designer direction. The images in `assets/image concept/` remain approved visual references for future UI stages; they are not a claim of pixel-perfect Stage 5 completion.

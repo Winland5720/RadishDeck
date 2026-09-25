@@ -237,3 +237,19 @@ Desktop UI и Web Runtime не менялись. Заполненные секц
 стандартной сериализацией, но ещё не используются текущим отображением.
 Action System продолжает читать старые привязки. Общий Renderer Contract
 предстоит подготовить отдельно; второй Renderer этим этапом не создаётся.
+
+## Stage 5 Application Shell
+
+The WPF host now embeds Microsoft WebView2 and serves local assets from src/RadishDeck.Desktop/Web. The shell provides shared navigation (Главная, Редактор, Логи, Клиенты, Настройки). A JSON bridge uses WebView2 PostWebMessageAsJson and WebMessageReceived; the browser Canvas renders Core Element V2 layout data and reports clamped drag coordinates back to the desktop model. WpfCanvasRenderer remains a legacy/prototype adapter; shared web rendering is the strategic direction.
+
+## Stage 5 — Application Shell + WebView2 Foundation
+
+`RadishDeck.Desktop` is a WPF host for a local WebView2 application. WPF owns window lifecycle, Windows integration and `ServerLauncherService`; local assets live in `src/RadishDeck.Desktop/Web` and require no CDN. The shell provides Главная, Редактор, Логи, Клиенты and Настройки.
+
+Desktop Web UI and Web Runtime are separate products: the former is the RadishDeck application UI inside WebView2, while the latter is the remote user control panel served by `RadishDeck.Server` to browsers and other devices. They may share rendering concepts later, but they do not share a hosting lifetime.
+
+Core remains framework-agnostic. Element V2, CanvasProfile, DeviceProfile, Renderer Contract and RenderElement contain no WPF, WebView2, HTML, CSS or JavaScript dependencies. The Web boundary uses explicit camelCase JSON: render elements contain nested `layout.x`, `layout.y`, `layout.width`, `layout.height` and `content.text`; interaction messages return structured coordinates to C# for model update, persistence and render confirmation.
+
+The prototype supports a logical 1920x1080 Canvas with 50% visual zoom, Button creation, selection, Layers/Properties summaries, pointer-capture drag, local JavaScript movement, logical clamping and persistence across restart. The default WebView2 context menu is disabled through `CoreWebView2Settings.AreDefaultContextMenusEnabled`; this does not affect external-browser Web Runtime behavior.
+
+`WpfCanvasRenderer` remains legacy/prototype code. It is not the strategic Designer direction. At a Canvas boundary the element stops logically even if the physical pointer continues outside the Canvas; future work may improve drag-anchor feedback without locking the Windows cursor.
