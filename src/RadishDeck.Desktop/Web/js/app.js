@@ -7,7 +7,12 @@ const sections = [
 ];
 
 let current = 'Главная';
+
 let zoom = .5;
+let zoomMode = "fit";
+
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 2;
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
@@ -29,10 +34,7 @@ const app = document.getElementById('app');
 
 
 function send(type, payload = {}) {
-    radishBridge.send({
-        type,
-        payload
-    });
+    radishBridge.send({ type, payload });
 }
 
 
@@ -55,15 +57,12 @@ function renderNav() {
                 send("window.maximize");
             } else {
                 send("window.restore");
-
             }
 
             renderNav();
             render();
 
-            send('navigation', {
-                section: current
-            });
+            send('navigation', { section: current });
         };
     });
 }
@@ -84,7 +83,6 @@ function render() {
 
     app.innerHTML = `
         <h1 class="title">${current}</h1>
-
         <div class="card muted">
             Раздел подготовлен для следующего этапа RadishDeck.
         </div>
@@ -105,41 +103,25 @@ function home() {
         <div class="cards">
 
             <div class="card">
-
-                <div class="muted">
-                    SERVER STATUS
-                </div>
-
-                <div class="metric">
-                    ${server.status}
-                </div>
-
-                <p class="muted">
-                    ${server.message || ''}
-                </p>
+                <div class="muted">SERVER STATUS</div>
+                <div class="metric">${server.status}</div>
+                <p class="muted">${server.message || ''}</p>
 
                 <label>
                     Bind address
-
-                    <select
-                        id="ip"
-                        ${server.canEdit ? '' : 'disabled'}>
-
+                    <select id="ip" ${server.canEdit ? '' : 'disabled'}>
                         ${addresses
                             .map(address => `
-                                <option
-                                    ${address === server.ipAddress ? 'selected' : ''}>
+                                <option ${address === server.ipAddress ? 'selected' : ''}>
                                     ${address}
                                 </option>
                             `)
                             .join('')}
-
                     </select>
                 </label>
 
                 <label>
                     Port
-
                     <input
                         id="port"
                         type="number"
@@ -150,35 +132,22 @@ function home() {
                 </label>
 
                 <div>
-                    <button
-                        id="start"
-                        ${running || !server.canEdit ? 'disabled' : ''}>
+                    <button id="start" ${running || !server.canEdit ? 'disabled' : ''}>
                         Start
                     </button>
-
-                    <button
-                        id="restart"
-                        ${server.canRestart ? '' : 'disabled'}>
+                    <button id="restart" ${server.canRestart ? '' : 'disabled'}>
                         Restart
                     </button>
-
-                    <button
-                        id="stop"
-                        ${server.canStop ? '' : 'disabled'}>
+                    <button id="stop" ${server.canStop ? '' : 'disabled'}>
                         Stop
                     </button>
                 </div>
 
                 <p>
-                    <button
-                        id="open"
-                        ${running ? '' : 'disabled'}>
+                    <button id="open" ${running ? '' : 'disabled'}>
                         Открыть пульт
                     </button>
-
-                    <button
-                        id="copy"
-                        ${running ? '' : 'disabled'}>
+                    <button id="copy" ${running ? '' : 'disabled'}>
                         Копировать адрес
                     </button>
                 </p>
@@ -186,46 +155,22 @@ function home() {
                 <p class="muted">
                     ${server.accessUrl || 'Server stopped'}
                 </p>
-
             </div>
 
-
             <div class="card">
-
-                <div class="muted">
-                    CANVAS PROFILE
-                </div>
-
-                <div class="metric">
-                    Desktop
-                </div>
-
-                <p class="muted">
-                    1920 × 1080
-                </p>
-
+                <div class="muted">CANVAS PROFILE</div>
+                <div class="metric">Desktop</div>
+                <p class="muted">1920 × 1080</p>
             </div>
 
-
             <div class="card">
-
-                <div class="muted">
-                    ACTIVITY
-                </div>
-
-                <div class="metric">
-                    0
-                </div>
-
-                <p class="muted">
-                    Recent events
-                </p>
-
+                <div class="muted">ACTIVITY</div>
+                <div class="metric">0</div>
+                <p class="muted">Recent events</p>
             </div>
 
         </div>
     `;
-
 
     document.getElementById('start').onclick = () => {
         send('server.start', {
@@ -234,26 +179,12 @@ function home() {
         });
     };
 
-
-    document.getElementById('stop').onclick = () => {
-        send('server.stop');
-    };
-
-
-    document.getElementById('restart').onclick = () => {
-        send('server.restart');
-    };
-
-
-    document.getElementById('open').onclick = () => {
-        send('server.openWebRuntime');
-    };
-
-
-    document.getElementById('copy').onclick = () => {
-        send('server.copyUrl');
-    };
+    document.getElementById('stop').onclick = () => send('server.stop');
+    document.getElementById('restart').onclick = () => send('server.restart');
+    document.getElementById('open').onclick = () => send('server.openWebRuntime');
+    document.getElementById('copy').onclick = () => send('server.copyUrl');
 }
+
 
 function fitDesignerCanvas() {
     const canvasStage = document.getElementById('canvas-stage');
@@ -264,14 +195,18 @@ function fitDesignerCanvas() {
         return;
     }
 
-    const availableWidth = canvasWrap.clientWidth - 40;
-    const availableHeight = canvasWrap.clientHeight - 40;
+    if (zoomMode === 'fit') {
+        const availableWidth = canvasWrap.clientWidth - 40;
+        const availableHeight = canvasWrap.clientHeight - 40;
 
-    zoom = Math.min(
-        availableWidth / CANVAS_WIDTH,
-        availableHeight / CANVAS_HEIGHT,
-        1
-    );
+        zoom = Math.min(
+            availableWidth / CANVAS_WIDTH,
+            availableHeight / CANVAS_HEIGHT,
+            1
+        );
+    }
+
+    zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
 
     zoomValue.textContent = Math.round(zoom * 100) + '%';
 
@@ -282,6 +217,155 @@ function fitDesignerCanvas() {
 }
 
 
+function bindDesignerElements() {
+    const canvas = document.getElementById('canvas');
+
+    if (!canvas) {
+        return;
+    }
+
+    canvas.querySelectorAll('.rd-element').forEach(domElement => {
+        const element = elements.find(
+            item => item.id === domElement.dataset.elementId
+        );
+
+        if (!element || !element.layout) {
+            return;
+        }
+
+        const layout = element.layout;
+
+        domElement.classList.add('element');
+
+
+        domElement.onclick = event => {
+            event.stopPropagation();
+            selectedId = element.id;
+
+            canvas.querySelectorAll('.rd-element').forEach(item => {
+                item.classList.toggle(
+                    'selected',
+                    item.dataset.elementId === selectedId
+                );
+            });
+
+            renderProperties();
+        };
+
+
+        let startX = 0;
+        let startY = 0;
+        let dragging = false;
+        let activePointer = -1;
+
+
+        const finishDrag = () => {
+            if (!dragging) {
+                return;
+            }
+
+            dragging = false;
+            domElement.onpointermove = null;
+
+            if (domElement.releasePointerCapture) {
+                try {
+                    domElement.releasePointerCapture(activePointer);
+                } catch {
+                    // already released
+                }
+            }
+
+            if (Number.isFinite(layout.x) && Number.isFinite(layout.y)) {
+                send('designer.elementChanged', {
+                    id: element.id,
+                    x: layout.x,
+                    y: layout.y
+                });
+            }
+
+            renderProperties();
+        };
+
+
+        domElement.onpointerdown = event => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            selectedId = element.id;
+
+            dragging = true;
+            activePointer = event.pointerId;
+
+            startX = event.clientX;
+            startY = event.clientY;
+
+            domElement.setPointerCapture?.(event.pointerId);
+        };
+
+
+        domElement.onpointermove = event => {
+            if (!dragging || event.pointerId !== activePointer) {
+                return;
+            }
+
+            const deltaX = (event.clientX - startX) / zoom;
+            const deltaY = (event.clientY - startY) / zoom;
+
+            layout.x = Math.max(0, Math.min(1920 - layout.width, layout.x + deltaX));
+            layout.y = Math.max(0, Math.min(1080 - layout.height, layout.y + deltaY));
+
+            startX = event.clientX;
+            startY = event.clientY;
+
+            domElement.style.left = layout.x + 'px';
+            domElement.style.top = layout.y + 'px';
+        };
+
+
+        domElement.onpointerup = finishDrag;
+        domElement.onpointercancel = finishDrag;
+
+
+        domElement.classList.toggle('selected', element.id === selectedId);
+    });
+}
+
+
+function renderProperties() {
+    const container = document.getElementById('properties');
+
+    if (!container) {
+        return;
+    }
+
+    const selected = elements.find(element => element.id === selectedId);
+
+    if (!selected || !selected.layout) {
+        container.innerHTML = 'Выберите элемент на Canvas';
+        return;
+    }
+
+    const layout = selected.layout;
+
+    container.innerHTML = `
+        <div class="row">
+            <b>
+                ${selected.content?.text
+                    || selected.name
+                    || selected.type
+                    || 'Element'}
+            </b>
+            <br>
+            <span class="muted">
+                Id: ${selected.id}<br>
+                Type: ${selected.type}<br>
+                X: ${layout.x.toFixed(1)} · Y: ${layout.y.toFixed(1)}<br>
+                Width: ${layout.width} · Height: ${layout.height}
+            </span>
+        </div>
+    `;
+}
+
 
 function editor() {
     app.classList.add('editor-mode');
@@ -289,121 +373,65 @@ function editor() {
     app.innerHTML = `
         <h1 class="title">
             Редактор
-
-            <span
-                class="muted"
-                style="font-size:14px">
+            <span class="muted" style="font-size:14px">
                 EDIT MODE · Desktop 1920×1080 · zoom <span id="zoom-value">50%</span>
             </span>
         </h1>
 
-
         <div class="grid">
 
             <aside class="panel">
+                <h3>СТРАНИЦЫ</h3>
+                <div class="row">Main</div>
 
-                <h3>
-                    СТРАНИЦЫ
-                </h3>
-
-                <div class="row">
-                    Main
+                <h3 style="margin-top:24px">СЛОИ</h3>
+                <div id="layers" class="muted">
+                    ${elements.length
+                        ? elements
+                            .map(element => `
+                                <div>
+                                    ${element.content?.text
+                                        || element.name
+                                        || element.type
+                                        || element.id}
+                                </div>
+                            `)
+                            .join('')
+                        : 'Canvas empty'}
                 </div>
-
-
-                <h3 style="margin-top:24px">
-                    СЛОИ
-                </h3>
-
-                <div
-                    id="layers"
-                    class="muted">
-
-                    ${
-                        elements.length
-                            ? elements
-                                .map(element => `
-                                    <div>
-                                        ${
-                                            element.content?.text
-                                            || element.name
-                                            || element.type
-                                            || element.id
-                                        }
-                                    </div>
-                                `)
-                                .join('')
-                            : 'Canvas empty'
-                    }
-
-                </div>
-
             </aside>
-                    
 
-         <section class="canvas-wrap">
-            <div class="device-frame">
-              <div id="canvas-stage" class="canvas-stage">
-                 <div id="canvas" class="canvas"></div>
-              </div>
-            </div>        
-        </section>
-
+            <section class="canvas-wrap">
+                <div class="device-frame">
+                    <div id="canvas-stage" class="canvas-stage">
+                        <div id="canvas" class="canvas"></div>
+                    </div>
+                </div>
+            </section>
 
             <aside class="panel">
-
-                <h3>
-                    СВОЙСТВА
-                </h3>
-
-                <div
-                    id="properties"
-                    class="muted">
+                <h3>СВОЙСТВА</h3>
+                <div id="properties" class="muted">
                     Выберите элемент на Canvas
                 </div>
 
-
-                <h3>
-                    ЭЛЕМЕНТЫ
-                </h3>
-
+                <h3>ЭЛЕМЕНТЫ</h3>
                 <button
                     id="add"
                     class="row"
-                    style="
-                        color:white;
-                        width:100%;
-                        text-align:left;
-                    ">
+                    style="color:white; width:100%; text-align:left;">
                     ＋ Button
                 </button>
-
             </aside>
 
         </div>
     `;
 
-
     const canvas = document.getElementById('canvas');
-    
-    const canvasStage = document.getElementById('canvas-stage');
-    const canvasWrap = document.querySelector('.canvas-wrap');
-    
-    const availableWidth = canvasWrap.clientWidth - 40;
-    const availableHeight = canvasWrap.clientHeight - 40;          
 
-     zoom = Math.min(
-        availableWidth / CANVAS_WIDTH,
-        availableHeight / CANVAS_HEIGHT,
-        1
-    );
-    
-    document.getElementById('zoom-value').textContent =
-        Math.round(zoom * 100) + '%';
-
-    canvasStage.style.width = (CANVAS_WIDTH * zoom) + 'px';
-    canvasStage.style.height = (CANVAS_HEIGHT * zoom) + 'px';
-
+    // Создаём рендерер заново при каждом входе в редактор.
+    // Прошлый canvas уничтожен вместе с app.innerHTML,
+    // поэтому ссылку на старый рендерер использовать нельзя.
     editorRenderer = new RadishSharedRenderer({
         root: canvas,
         canvas: {
@@ -415,185 +443,9 @@ function editor() {
     editorRenderer.setScale(zoom);
     editorRenderer.render(elements);
 
-
-    canvas
-        .querySelectorAll('.rd-element')
-        .forEach(domElement => {
-
-            const element = elements.find(
-                item => item.id === domElement.dataset.elementId
-            );
-
-            const layout = element.layout;
-
-
-            domElement.classList.add('element');
-
-
-            domElement.onclick = event => {
-                event.stopPropagation();
-
-                selectedId = element.id;
-
-                render();
-            };
-
-
-            let startX = 0;
-            let startY = 0;
-
-            let dragging = false;
-            let activePointer = -1;
-
-
-            const finishDrag = () => {
-                if (!dragging) {
-                    return;
-                }
-
-                dragging = false;
-
-                domElement.onpointermove = null;
-
-                if (domElement.releasePointerCapture) {
-                    try {
-                        domElement.releasePointerCapture(activePointer);
-                    }
-                    catch {
-                        // Pointer capture may already be released.
-                    }
-                }
-
-                if (
-                    Number.isFinite(layout.x)
-                    && Number.isFinite(layout.y)
-                ) {
-                    send('designer.elementChanged', {
-                        id: element.id,
-                        x: layout.x,
-                        y: layout.y
-                    });
-                }
-            };
-
-
-            domElement.onpointerdown = event => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                selectedId = element.id;
-
-                dragging = true;
-                activePointer = event.pointerId;
-
-                startX = event.clientX;
-                startY = event.clientY;
-
-                domElement.setPointerCapture?.(
-                    event.pointerId
-                );
-            };
-
-
-            domElement.onpointermove = event => {
-                if (
-                    !dragging
-                    || event.pointerId !== activePointer
-                ) {
-                    return;
-                }
-
-
-                const deltaX =
-                    (event.clientX - startX) / zoom;
-
-                const deltaY =
-                    (event.clientY - startY) / zoom;
-
-
-                layout.x = Math.max(
-                    0,
-                    Math.min(
-                        1920 - layout.width,
-                        layout.x + deltaX
-                    )
-                );
-
-
-                layout.y = Math.max(
-                    0,
-                    Math.min(
-                        1080 - layout.height,
-                        layout.y + deltaY
-                    )
-                );
-
-
-                startX = event.clientX;
-                startY = event.clientY;
-
-
-                domElement.style.left =
-                    layout.x + 'px';
-
-                domElement.style.top =
-                    layout.y + 'px';
-            };
-
-
-            domElement.onpointerup = finishDrag;
-            domElement.onpointercancel = finishDrag;
-
-
-            if (element.id === selectedId) {
-                domElement.classList.add('selected');
-            }
-        });
-
-
-    const selected = elements.find(
-        element => element.id === selectedId
-    );
-
-
-    if (selected) {
-        const layout = selected.layout;
-
-
-        document.getElementById('properties').innerHTML = `
-            <div class="row">
-
-                <b>
-                    ${
-                        selected.content?.text
-                        || selected.name
-                        || selected.type
-                        || 'Element'
-                    }
-                </b>
-
-                <br>
-
-                <span class="muted">
-                    Id: ${selected.id}
-                    <br>
-
-                    Type: ${selected.type}
-                    <br>
-
-                    X: ${layout.x.toFixed(1)}
-                    ·
-                    Y: ${layout.y.toFixed(1)}
-                    <br>
-
-                    Width: ${layout.width}
-                    ·
-                    Height: ${layout.height}
-                </span>
-
-            </div>
-        `;
-    }
+    fitDesignerCanvas();
+    bindDesignerElements();
+    renderProperties();
 
 
     document.getElementById('add').onclick = () => {
@@ -605,35 +457,50 @@ function editor() {
 radishBridge.onMessage(message => {
 
     if (message.type === 'renderElements') {
-
         elements = message.payload.elements || [];
 
         selectedId =
             message.payload.selectedId
             || selectedId;
 
-        render();
+        if (current !== 'Редактор') {
+            return;
+        }
+
+        if (!editorRenderer) {
+            render();
+            return;
+        }
+
+        editorRenderer.render(elements);
+        bindDesignerElements();
+        renderProperties();
     }
 
     else if (message.type === 'server.state') {
-
         server = message.payload;
 
-        render();
+        if (current === 'Главная') {
+            home();
+        } else if (current !== 'Редактор') {
+            render();
+        }
     }
 
     else if (message.type === 'error') {
-
         console.error(
             'Designer/bridge error:',
             message.payload.message
         );
 
-        document.getElementById('status').textContent =
-            'Designer error: '
-            + message.payload.message;
+        const status = document.getElementById('status');
+        if (status) {
+            status.textContent =
+                'Designer error: ' + message.payload.message;
+        }
     }
 });
+
 
 window.addEventListener('resize', () => {
     if (current === 'Редактор') {

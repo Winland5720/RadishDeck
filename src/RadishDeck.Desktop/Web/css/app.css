@@ -89,39 +89,54 @@ main {
     letter-spacing: 1px;
 }
 
+/* Рабочая область вокруг холста. */
 .canvas-wrap {
     overflow: auto;
+    background: #0b0e12;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
 
+    display: flex;
+    justify-content: safe center;
+    align-items: flex-start;
+}
+
+/* «Корпус планшета» — обнимает canvas-stage. */
+.device-frame {
+    display: inline-flex;
+    padding: 6px;
     background: linear-gradient(
         145deg,
         #373e46,
         #11161b 55%,
         #080b0e
     );
-
-    border-radius: 12px;
-    padding: 2px;
     border: 1px solid #59636d;
-    
+    border-radius: 14px;
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .035),
-        0 6px 18px rgba(0, 0, 0, .45);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
+        inset 0 0 0 2px rgba(255, 255, 255, .035),
+        inset 0 0 18px rgba(0, 0, 0, .75),
+        0 14px 32px rgba(0, 0, 0, .45);
 }
 
-/* Designer logical Canvas: 1920x1080 */
-.canvas {
+/* Размер canvas-stage выставляется JS через fitDesignerCanvas(). */
+.canvas-stage {
     position: relative;
+    width: 960px;
+    height: 540px;
+    flex: 0 0 auto;
+}
+
+.canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 1920px;
     height: 1080px;
 
     background-color: #111820;
 
-    /* 20px logical grid.
-       At 50% Designer zoom the 2px lines render at ~1px. */
     background-image:
         linear-gradient(
             rgba(90, 120, 140, .35) 2px,
@@ -154,16 +169,13 @@ main {
     color: #fff;
     cursor: move;
     user-select: none;
+    touch-action: none;
+    pointer-events: auto;
 }
 
 .element.selected {
     outline: 3px solid #ffd166;
     z-index: 2;
-}
-
-.element {
-    touch-action: none;
-    pointer-events: auto;
 }
 
 .muted {
@@ -240,12 +252,6 @@ button {
 button:disabled {
     opacity: .45;
     cursor: not-allowed;
-}
-.canvas-stage {
-    position: relative;
-    width: 960px;
-    height: 540px;
-    flex: 0 0 auto;
 }
 
 main.editor-mode {
