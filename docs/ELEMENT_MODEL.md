@@ -324,3 +324,7 @@ V2-only проектов с Text/Image/Container.
 Новая версия читает старые данные без миграции. Старое приложение при
 пересохранении может потерять неизвестные ему V2-секции; сохранность этих
 секций при откате не гарантируется. Renderer Contract остаётся будущим этапом.
+
+## Stage 6.1 implementation
+
+Button rendering is shared between Desktop WebView2 and browser Runtime through `RadishDeck.SharedWeb`. V2 Layout is used when present; legacy decks continue to load through the existing model and storage contract. Runtime renders only the first page and scales the logical Canvas to the viewport.

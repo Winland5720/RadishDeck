@@ -7,5 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RadishDeck.Core\RadishDeck.Core.csproj" />
     <ProjectReference Include="..\RadishDeck.Infrastructure\RadishDeck.Infrastructure.csproj" />
+    <Content Include="..\RadishDeck.SharedWeb\renderer.js" Link="wwwroot\shared\renderer.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\RadishDeck.SharedWeb\renderer.css" Link="wwwroot\shared\renderer.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

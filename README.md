@@ -137,3 +137,7 @@ dotnet run --project tests/RadishDeck.Lifecycle.Tests --no-build -- src/RadishDe
 Loopback covers local operation, not LAN connectivity.
 
 [Changelog](CHANGELOG.md) · [Architecture](docs/ARCHITECTURE.md) · [Element model](docs/ELEMENT_MODEL.md) · [0.4 plan](docs/DEVELOPMENT_0.4_PLAN.md)
+
+### Stage 6.1
+
+A canonical shared Web renderer now serves both the Desktop WebView2 Designer and browser Runtime. The Runtime uses the first page, logical 1920×1080 Canvas fallback and proportional visual scaling. Existing persistence and `/execute` action behavior remain compatible.

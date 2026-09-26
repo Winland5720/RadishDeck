@@ -64,3 +64,10 @@ VALIDATED:
 - WebView2 context-menu suppression; external browser behavior remains unchanged.
 
 Future Designer work includes resize, richer Properties/Pages/Layers, multi-selection, grouping, alignment, undo/redo, custom context actions, responsive profiles, widgets, plugins, QR pairing and production shared rendering.
+
+## Stage 6.1 — Shared Web Renderer Foundation
+
+- Added canonical vanilla shared renderer assets linked into Desktop and Server outputs.
+- Desktop Designer now uses the shared visual renderer while preserving selection, drag, clamp and persistence adapters.
+- Browser Runtime now uses logical absolute Canvas positioning, first-page rendering and proportional viewport scaling.
+- Existing `/deck`, `/execute`, ActionDispatcher and `deck.v1` compatibility remain unchanged.

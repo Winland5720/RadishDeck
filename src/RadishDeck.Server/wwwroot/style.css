@@ -1,1 +1,1 @@
-body{font-family:Segoe UI,Arial;background:#111;color:#eee;padding:30px}.deck{display:grid;grid-template-columns:repeat(4,120px);gap:12px}.btn{height:80px;background:#e11d2e;color:white;border:0;border-radius:12px;font-size:18px;cursor:pointer}
+body{font-family:Segoe UI,Arial;background:#111;color:#eee;padding:30px;overflow:auto}.viewport{position:relative;overflow:hidden;max-width:100%;min-height:240px}.rd-render-root{background:#182028;border:1px solid #43505a}.rd-button{font-size:18px;padding:8px}.rd-button:hover{filter:brightness(1.15)}

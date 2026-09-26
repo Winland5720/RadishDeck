@@ -74,6 +74,15 @@ public partial class MainWindow : Window
             {
                 case "ready": _ready = true; SendServer(); SendElements(); if (_error != null) SendError(_error); break;
                 case "navigation": break;
+
+                case "window.maximize":
+                    WindowState = WindowState.Maximized;
+                    break;
+
+                case "window.restore":
+                     WindowState = WindowState.Normal;
+                     break;
+
                 case "server.getState": SendServer(); break;
                 case "server.start":
                     if (!_server.Snapshot.CanEditConfiguration) throw new InvalidOperationException("Stop the server before changing configuration");
@@ -119,7 +128,7 @@ public partial class MainWindow : Window
         if (state.Status != ServerLifecycle.Running || state.Configuration is null) throw new InvalidOperationException("Server is not running");
         return state.Configuration.Address.AbsoluteUri;
     }
-    private void SendElements() => Send("renderElements", new { canvas = _canvas, elements = _page?.Elements.Select(RenderElement.From).ToArray() ?? [], selectedId = _selected, pageName = _page?.Name, available = _page != null });
+    private void SendElements() => Send("renderElements", new { canvas = _canvas, elements = _page?.Elements.Select(RenderElement.From).ToArray() ?? Array.Empty<RenderElement>(), selectedId = _selected, pageName = _page?.Name, available = _page != null });
     private void ServerChanged() { if (!Dispatcher.HasShutdownStarted) Dispatcher.BeginInvoke(new System.Action(SendServer)); }
     private void SendServer()
     {

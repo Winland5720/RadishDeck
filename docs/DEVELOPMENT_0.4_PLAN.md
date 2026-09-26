@@ -230,3 +230,7 @@ Element
 ## Stage 5 completion
 
 Stage 5 is complete: the Desktop WebView2 shell, local Web UI assets, navigation, structured C#↔JavaScript bridge, Canvas/Button Designer foundation, server lifecycle controls, persistence round trip and host-level context-menu suppression are implemented and manually validated. Resize, full Properties/Pages/Layers, multi-selection, undo/redo, widgets, QR pairing, production shared rendering and full Logs/Clients/Settings remain future work.
+
+## Stage 6.1 status
+
+The shared Web renderer foundation is implemented for Button-first Desktop and Runtime integration. Remaining Stage 6 work includes broader element coverage, richer page management, and future edit capabilities.

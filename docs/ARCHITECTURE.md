@@ -253,3 +253,9 @@ Core remains framework-agnostic. Element V2, CanvasProfile, DeviceProfile, Rende
 The prototype supports a logical 1920x1080 Canvas with 50% visual zoom, Button creation, selection, Layers/Properties summaries, pointer-capture drag, local JavaScript movement, logical clamping and persistence across restart. The default WebView2 context menu is disabled through `CoreWebView2Settings.AreDefaultContextMenusEnabled`; this does not affect external-browser Web Runtime behavior.
 
 `WpfCanvasRenderer` remains legacy/prototype code. It is not the strategic Designer direction. At a Canvas boundary the element stops logically even if the physical pointer continues outside the Canvas; future work may improve drag-anchor feedback without locking the Windows cursor.
+
+## Stage 6.1 Shared Web Renderer
+
+Stage 6.1 adds one canonical vanilla implementation in `src/RadishDeck.SharedWeb/renderer.js` and `renderer.css`. Desktop WebView2 and the browser Runtime receive the same files through linked static content. The renderer owns only DOM presentation from camelCase RenderElement data; Designer selection/drag remains in the Desktop adapter and Runtime activation remains responsible for calling `/execute`.
+
+The Runtime uses the first Deck page as the active page for this pass. Canvas coordinates remain logical (fallback `1920x1080`) and the browser applies proportional visual scaling without changing model coordinates. Legacy `deck.v1` persistence and the existing action pipeline remain unchanged.
